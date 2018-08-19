@@ -1,4 +1,3 @@
-'use strict'
+import VolumeMeter from './components/VolumeMeter';
 
-import VolumeMeter from './VolumeMeter'
-export default VolumeMeter
+export default VolumeMeter;

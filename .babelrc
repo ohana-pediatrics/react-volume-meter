@@ -1,3 +1,15 @@
 {
-  "presets": ["react", "es2015"],
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "browsers": "last 2 versions"
+        }
+      }
+    ],
+    "react",
+    "stage-1",
+    "flow"
+  ]
 }

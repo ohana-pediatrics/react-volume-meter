@@ -1,0 +1,16 @@
+[ignore]
+.*/node_modules/findup/test/.*
+.*/node_modules/config-chain/test/.*
+.*/node_modules/http-status-codes/.*
+
+[include]
+
+[libs]
+
+[lints]
+
+[options]
+module.file_ext=.js
+module.file_ext=.jsx
+
+[strict]

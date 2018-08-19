@@ -42,7 +42,3 @@ Optional. The maximum volume level for the volume meter. Its theoretical maximum
 ### style
 
 Optional. Style of the canvas element.
-
-### command
-
-Optional. Permitted values are `'start'`, `'stop'`, and `'none'`. Useful for passing directives to the component in a redux-like system where state is communicated through props. When the value for the `command` prop is changed, the component calls the corresponding method (except in the default case of `'none'`). Users can also call these methods directly by accessing the component's `ref`.
