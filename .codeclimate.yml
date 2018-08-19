@@ -1,0 +1,31 @@
+version: "2"
+checks:
+  method-complexity:
+    config:
+      threshold: 9
+plugins:
+  git-legal:
+    enabled: true
+  eslint:
+    enabled: true
+    channel: "eslint-4"
+  fixme:
+    enabled: true
+    config:
+      strings:
+      - FIXME
+      - BUG
+      - TODO
+  duplication:
+    enabled: true
+    config:
+      languages:
+        javascript:
+          mass_threshold: 90
+  stylelint:
+    enabled: true
+
+exclude_paths:
+  - "src/test/"
+  - "src/flow-typed/"
+
