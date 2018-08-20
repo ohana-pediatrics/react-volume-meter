@@ -1,5 +1,5 @@
 {
-  "name": "react-volume-meter",
+  "name": "@ohanapediatrics/react-volume-meter",
   "version": "2.1.0",
   "description": "A volume meter React component",
   "main": "lib/index.js",
