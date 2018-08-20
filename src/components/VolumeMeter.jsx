@@ -2,6 +2,13 @@
 
 import React, { Component } from 'react';
 
+
+const DEFAULT_MAX_VOLUME = 50;
+
+export const VM_STEPPED = 0;
+export const VM_FLAT = 1;
+type VmShape = 0 | 1;
+
 type Props = {
     audioContext: AudioContext,
     src: AudioNode,
@@ -9,6 +16,8 @@ type Props = {
     height: number,
     enabled?: boolean,
     maxVolume: number,
+    shape: VmShape,
+    blocks?: number,
     style: {}
 }
 
@@ -23,15 +32,29 @@ class MeterDrawer {
 
   maxVolume: number;
 
+  +blocks: number;
+
   +barWidth: number;
 
-  constructor(ctx, height, width, maxVolume) {
+  +shape: VmShape;
+
+  blockMaxima: Array<number>;
+
+  constructor(ctx, {
+    height, width, maxVolume = DEFAULT_MAX_VOLUME, shape = VM_STEPPED, blocks = 5,
+  }) {
     this.canvasCtx = ctx;
     this.height = height;
     this.width = width;
-    this.maxVolume = maxVolume || 50;
 
-    this.barWidth = width / 6;
+    this.maxVolume = maxVolume;
+    this.shape = shape;
+
+    this.blocks = blocks;
+    this.barWidth = width / (blocks + 1);
+
+    this.blockMaxima = Array(blocks).fill(0).map((_, i) => (i + 1) * maxVolume / blocks);
+    console.log(this.blockMaxima);
   }
 
   start() {
@@ -47,56 +70,66 @@ class MeterDrawer {
 
   draw(volume) {
     const {
-      prevVolume, canvasCtx, barWidth, height, maxVolume,
+      prevVolume, canvasCtx, barWidth, height, maxVolume, shape, blocks,
     } = this;
     const vol = Math.max(volume, prevVolume * 0.95);
+    this.prevVolume = vol;
     this.clear();
+    const volPerBlock = maxVolume / blocks;
 
-    for (let i = 0; i < 5; i += 1) {
-      if (i === 4 && maxVolume < vol) {
-        // eslint-disable-next-line no-param-reassign
-        canvasCtx.fillStyle = 'red';
-      } else if ((i + 1) * (maxVolume / 5) < vol) {
-        // eslint-disable-next-line no-param-reassign
-        canvasCtx.fillStyle = 'green';
-      } else {
-        // eslint-disable-next-line no-param-reassign
-        canvasCtx.fillStyle = 'grey';
+    this.blockMaxima.forEach((blockMax, i) => {
+      let color = 'grey';
+
+      if (vol > maxVolume && blockMax >= maxVolume) {
+        color = 'red';
+      } else if (vol > blockMax) {
+        color = 'green';
       }
-      const x = barWidth * 6 / 5 * i;
-      const y = height * 0.6 - height * i * 0.15;
+
+      canvasCtx.fillStyle = color;
+
+      const x = barWidth * (blocks + 1) / blocks * i;
+      const y = height * (0.9) - (shape === VM_STEPPED ? height * i * (1 / blocks) : height);
 
       canvasCtx.fillRect(x, y, barWidth, height - y);
-      if (vol < maxVolume && i * 10 < vol) {
+
+      if (vol < maxVolume && blockMax < vol) {
         // eslint-disable-next-line no-param-reassign
         canvasCtx.fillStyle = 'green';
         canvasCtx.fillRect(
           x,
           y,
-          ((vol % (maxVolume / 5)) / (maxVolume / 5)) * (barWidth),
+          // ((v % B) / B) is a sawtooth with period B and amplitude 1
+          ((vol % (volPerBlock)) / (volPerBlock)) * (barWidth),
           height - y,
         );
       }
-    }
+    });
   }
 }
 
+const sum = (a, b) => a + b;
 
 class VolumeMeter extends Component<Props> {
   static defaultProps = {
     enabled: true,
+    blocks: 5,
   };
 
   canvas = React.createRef();
 
   componentDidMount() {
-    const { width, height, maxVolume } = this.props;
+    const {
+      width, height, maxVolume, shape, blocks,
+    } = this.props;
     if (!this.canvas.current) {
       return;
     }
     const canvasCtx = this.canvas.current.getContext('2d');
 
-    this.drawer = new MeterDrawer(canvasCtx, width, height, maxVolume);
+    this.drawer = new MeterDrawer(canvasCtx, {
+      width, height, maxVolume, shape, blocks,
+    });
 
     this.drawer.clear();
   }
@@ -104,6 +137,7 @@ class VolumeMeter extends Component<Props> {
 
   componentDidUpdate(prevProps: Props) {
     const { audioContext, src, enabled } = this.props;
+    this.stop();
     if (src && !prevProps.src) {
       this.analyser = audioContext.createAnalyser();
       src.connect(this.analyser);
@@ -146,7 +180,7 @@ class VolumeMeter extends Component<Props> {
   getVolume = () => {
     this.analyser.getByteFrequencyData(this.array);
 
-    return this.array.reduce((sum, val) => sum + val, 0) / this.array.length;
+    return this.array.reduce(sum, 0) / this.array.length;
   };
 
   drawer: MeterDrawer;
@@ -162,6 +196,7 @@ class VolumeMeter extends Component<Props> {
 
     return (
       <canvas
+        className="volume-meter"
         ref={this.canvas}
         width={width}
         height={height}
