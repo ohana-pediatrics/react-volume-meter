@@ -89,7 +89,7 @@ class MeterDrawer {
       canvasCtx.fillStyle = color;
 
       const x = barWidth * (blocks + 1) / blocks * i;
-      const y = height * (0.9) - (shape === VM_STEPPED ? height * i * (1 / blocks) : height);
+      const y = height - (shape === VM_STEPPED ? height * (i + 1) * (1 / (blocks + 1)) : height);
 
       canvasCtx.fillRect(x, y, barWidth, height - y);
 
