@@ -2,12 +2,13 @@
   "name": "@ohanapediatrics/react-volume-meter",
   "version": "2.1.1",
   "description": "A volume meter React component",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rimraf lib && babel ./src -d lib",
+    "build": "webpack",
     "lint": "eslint --ext .js --ext .jsx src"
   },
+  "prepublish": "npm run build",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ohana-pediatrics/react-volume-meter.git"
