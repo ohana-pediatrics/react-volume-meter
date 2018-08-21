@@ -61,6 +61,11 @@ class MeterDrawer {
     this.prevVolume = 0;
   }
 
+  stop() {
+    this.prevVolume = 0;
+    this.draw(0);
+  }
+
   clear() {
     const {
       canvasCtx, width, height,
@@ -131,14 +136,14 @@ class VolumeMeter extends Component<Props> {
       width, height, maxVolume, shape, blocks,
     });
 
-    this.drawer.clear();
+    this.drawer.stop();
   }
 
 
   componentDidUpdate(prevProps: Props) {
     const { audioContext, src, enabled } = this.props;
     this.stop();
-    if (src && !prevProps.src) {
+    if (src && src !== prevProps.src) {
       this.analyser = audioContext.createAnalyser();
       src.connect(this.analyser);
       this.array = new Uint8Array(this.analyser.frequencyBinCount);
@@ -172,7 +177,7 @@ class VolumeMeter extends Component<Props> {
   };
 
   stop = () => {
-    this.drawer.clear();
+    this.drawer.stop();
     window.cancelAnimationFrame(this.rafId);
   };
 

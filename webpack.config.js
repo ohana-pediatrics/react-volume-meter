@@ -16,6 +16,8 @@ module.exports = {
     path: `${__dirname}/dist`,
     publicPath: '/',
     filename: 'index.js',
+    libraryTarget: 'commonjs2',
+    library: 'VolumeMeter',
   },
   devServer: {
     contentBase: './dist',
