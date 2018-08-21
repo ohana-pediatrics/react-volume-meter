@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "lint": "eslint --ext .js --ext .jsx src"
+    "lint": "eslint --ext .js --ext .jsx src",
+    "prepublish": "npm run build"
   },
-  "prepublish": "npm run build",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ohana-pediatrics/react-volume-meter.git"
