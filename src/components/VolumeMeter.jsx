@@ -54,7 +54,6 @@ class MeterDrawer {
     this.barWidth = width / (blocks + 1);
 
     this.blockMaxima = Array(blocks).fill(0).map((_, i) => (i + 1) * maxVolume / blocks);
-    console.log(this.blockMaxima);
   }
 
   start() {
@@ -125,7 +124,7 @@ class VolumeMeter extends Component<Props> {
 
   componentDidMount() {
     const {
-      width, height, maxVolume, shape, blocks,
+      width, height, maxVolume, shape, blocks, audioContext, src,
     } = this.props;
     if (!this.canvas.current) {
       return;
@@ -137,19 +136,17 @@ class VolumeMeter extends Component<Props> {
     });
 
     this.drawer.stop();
+    if (audioContext && src) {
+      this.setupAnalyzer();
+    }
   }
 
 
   componentDidUpdate(prevProps: Props) {
-    const { audioContext, src, enabled } = this.props;
+    const { src, enabled } = this.props;
     this.stop();
     if (src && src !== prevProps.src) {
-      this.analyser = audioContext.createAnalyser();
-      src.connect(this.analyser);
-      this.array = new Uint8Array(this.analyser.frequencyBinCount);
-      if (enabled) {
-        this.start();
-      }
+      this.setupAnalyzer();
     }
 
     if (enabled && !prevProps.enabled) {
@@ -181,6 +178,15 @@ class VolumeMeter extends Component<Props> {
     window.cancelAnimationFrame(this.rafId);
   };
 
+  setupAnalyzer = () => {
+    const { audioContext, src, enabled } = this.props;
+    this.analyser = audioContext.createAnalyser();
+    src.connect(this.analyser);
+    this.array = new Uint8Array(this.analyser.frequencyBinCount);
+    if (enabled) {
+      this.start();
+    }
+  };
 
   getVolume = () => {
     this.analyser.getByteFrequencyData(this.array);
