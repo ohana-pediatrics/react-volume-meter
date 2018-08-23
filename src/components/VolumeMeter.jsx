@@ -141,7 +141,6 @@ class VolumeMeter extends Component<Props> {
     }
   }
 
-
   componentDidUpdate(prevProps: Props) {
     const { src, enabled } = this.props;
     this.stop();
@@ -149,11 +148,8 @@ class VolumeMeter extends Component<Props> {
       this.setupAnalyzer();
     }
 
-    if (enabled && !prevProps.enabled) {
+    if (enabled) {
       this.start();
-    }
-    if (!enabled && prevProps.enabled) {
-      this.stop();
     }
   }
 
