@@ -11,7 +11,7 @@ type VmShape = 0 | 1;
 
 type Props = {
     audioContext: AudioContext,
-    src: AudioNode,
+    src: ?AudioNode,
     width: number,
     height: number,
     enabled?: boolean,
@@ -148,7 +148,7 @@ class VolumeMeter extends Component<Props> {
       this.setupAnalyzer();
     }
 
-    if (enabled) {
+    if (this.analyser && enabled) {
       this.start();
     }
   }
@@ -176,6 +176,9 @@ class VolumeMeter extends Component<Props> {
 
   setupAnalyzer = () => {
     const { audioContext, src, enabled } = this.props;
+    if (!src) {
+      return;
+    }
     this.analyser = audioContext.createAnalyser();
     src.connect(this.analyser);
     this.array = new Uint8Array(this.analyser.frequencyBinCount);
