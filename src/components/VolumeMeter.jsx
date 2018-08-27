@@ -153,6 +153,10 @@ class VolumeMeter extends Component<Props> {
     }
   }
 
+  componentWillUnmount() {
+    this.stop();
+  }
+
   start = () => {
     this.drawer.start();
 
