@@ -1,23 +1,29 @@
-// @flow
+import React, {Component, CSSProperties, RefObject} from 'react';
 
-import React, { Component } from 'react';
-
-export const VM_STEPPED = 0;
-export const VM_FLAT = 1;
-type VmShape = 0 | 1;
+export enum VmShape {
+  VM_STEPPED,
+  VM_FLAT
+}
 
 type Props = {
     audioContext: AudioContext,
-    src: ?MediaStreamAudioSourceNode,
+    src?: MediaStreamAudioSourceNode,
     width: number,
     height: number,
     enabled?: boolean,
     shape: VmShape,
     blocks?: number,
-    style: {}
+    style?: CSSProperties
 }
 
-class MeterDrawer {
+interface MeterDrawerOptions {
+  width: number;
+  height: number;
+  blocks: number;
+  shape: VmShape;
+}
+
+class MeterRenderer {
   canvasCtx: CanvasRenderingContext2D;
 
   width: number;
@@ -26,17 +32,17 @@ class MeterDrawer {
 
   prevVolume: number;
 
-  +blocks: number;
+  readonly blocks: number;
 
-  +barWidth: number;
+  readonly barWidth: number;
 
-  +shape: VmShape;
+  readonly shape: VmShape;
 
   blockMaxima: Array<number>;
 
-  constructor(ctx, {
-    height, width, shape = VM_STEPPED, blocks = 5,
-  }) {
+  constructor(ctx: CanvasRenderingContext2D, {
+    height, width, shape = VmShape.VM_STEPPED, blocks = 5,
+  }: MeterDrawerOptions) {
     this.canvasCtx = ctx;
     this.height = height;
     this.width = width;
@@ -65,7 +71,7 @@ class MeterDrawer {
     canvasCtx.clearRect(0, 0, width, height);
   }
 
-  draw(volume) {
+  draw(volume: number) {
     const {
       prevVolume, canvasCtx, barWidth, height, shape, blocks,
     } = this;
@@ -86,12 +92,11 @@ class MeterDrawer {
       canvasCtx.fillStyle = color;
 
       const x = barWidth * (blocks + 1) / blocks * i;
-      const y = height - (shape === VM_STEPPED ? height * (i + 1) * (1 / (blocks + 1)) : height);
+      const y = height - (shape === VmShape.VM_STEPPED ? height * (i + 1) * (1 / (blocks + 1)) : height);
 
       canvasCtx.fillRect(x, y, barWidth, height - y);
 
       if (vol < 1 && blockMax < vol) {
-        // eslint-disable-next-line no-param-reassign
         canvasCtx.fillStyle = 'green';
         canvasCtx.fillRect(
           x,
@@ -105,24 +110,36 @@ class MeterDrawer {
   }
 }
 
-class VolumeMeter extends Component<Props> {
+export class VolumeMeter extends Component<Props> {
   static defaultProps = {
     enabled: true,
     blocks: 5,
   };
 
-  canvas = React.createRef();
+  canvas:RefObject<HTMLCanvasElement> = React.createRef();
+
+  private getCanvasContext = (): CanvasRenderingContext2D => {
+    const canvas = this.canvas.current;
+    if(!canvas) {
+      throw new Error('Cannot get a reference to the canvas');
+    }
+    const canvasCtx = canvas.getContext('2d');
+    if(!canvasCtx) {
+      throw new Error('2D context not avaiable');
+    }
+
+    return canvasCtx;
+  };
 
   componentDidMount() {
     const {
-      width, height, shape, blocks, audioContext, src,
+      width, height, shape, blocks=5, audioContext, src,
     } = this.props;
-    if (!this.canvas.current) {
-      return;
-    }
-    const canvasCtx = this.canvas.current.getContext('2d');
 
-    this.drawer = new MeterDrawer(canvasCtx, {
+    const canvasCtx = this.getCanvasContext();
+
+
+    this.drawer = new MeterRenderer(canvasCtx, {
       width, height, shape, blocks,
     });
 
@@ -152,9 +169,9 @@ class VolumeMeter extends Component<Props> {
     this.stop();
   }
 
-  changedSource = (
-    oldSrc: MediaStreamAudioSourceNode,
-    newSrc: MediaStreamAudioSourceNode,
+  private changedSource = (
+    oldSrc: MediaStreamAudioSourceNode | undefined,
+    newSrc: MediaStreamAudioSourceNode | undefined,
   ): boolean => {
     if (!oldSrc && !newSrc) {
       return false;
@@ -171,7 +188,7 @@ class VolumeMeter extends Component<Props> {
     return oldSrc.mediaStream.id !== newSrc.mediaStream.id;
   };
 
-  start = () => {
+  private start = () => {
     this.drawer.start();
 
     const drawLoop = () => {
@@ -187,12 +204,12 @@ class VolumeMeter extends Component<Props> {
     drawLoop();
   };
 
-  stop = () => {
+  private stop = () => {
     this.drawer.stop();
     window.cancelAnimationFrame(this.rafId);
   };
 
-  setupAnalyzer = () => {
+  private setupAnalyzer = () => {
     const { audioContext, src, enabled } = this.props;
     if (!src) {
       return;
@@ -205,19 +222,19 @@ class VolumeMeter extends Component<Props> {
     }
   };
 
-  getVolume = () => {
+  private getVolume = () => {
     this.analyser.getByteTimeDomainData(this.array);
 
     return this.array.reduce((max, vol) => Math.max(max, Math.abs(vol - 128))) / 128;
   };
 
-  drawer: MeterDrawer;
+  private drawer: MeterRenderer;
 
-  rafId: number;
+  private rafId: number;
 
-  array: Uint8Array;
+  private array: Uint8Array;
 
-  analyser: AnalyserNode;
+  private analyser: AnalyserNode;
 
   render() {
     const { width, height, style } = this.props;
@@ -233,5 +250,3 @@ class VolumeMeter extends Component<Props> {
     );
   }
 }
-
-export default VolumeMeter;

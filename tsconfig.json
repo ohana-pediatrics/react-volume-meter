@@ -1,0 +1,33 @@
+{
+  "emitDecoratorMetadata": true,
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "outDir": "./dist",
+    // path to output directory
+    "sourceMap": true,
+    // allow sourcemap support
+    "strictNullChecks": true,
+    // enable strict null checks as a best practice
+    "module": "commonjs",
+    // specify module code generation
+    "jsx": "react",
+    // use typescript to transpile jsx to js
+    "target": "es2018",
+    // specify ECMAScript target version
+    "noImplicitAny": true,
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "resolveJsonModule": true
+  },
+  "exclude": [
+    "node_modules",
+    "styleguide",
+    "dist",
+    "coverage"
+  ]
+}

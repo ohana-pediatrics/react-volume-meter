@@ -1,26 +1,31 @@
 module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-  entry: './src/index.js',
+  entry: './src/index.ts',
+  devtool: "source-map",
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: ['babel-loader'],
+        test: /\.tsx?$/,
+        loader: 'awesome-typescript-loader',
+      },
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        loader: 'source-map-loader',
       },
     ],
   },
   resolve: {
-    extensions: ['*', '.js', '.jsx'],
+    extensions: ['*', '.ts', '.tsx', '.js','.jsx'],
   },
   output: {
     path: `${__dirname}/dist`,
-    publicPath: '/',
     filename: 'index.js',
     libraryTarget: 'commonjs2',
     library: 'VolumeMeter',
   },
-  devServer: {
-    contentBase: './dist',
-  },
+  externals: {
+    "react": "React",
+    "react-dom": "ReactDOM"
+  }
 };
