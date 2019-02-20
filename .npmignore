@@ -1,3 +1,5 @@
 .gitignore
 src/
 .idea/
+webpack.config.js
+.eslintrc.js

@@ -6,9 +6,9 @@ checks:
 plugins:
   git-legal:
     enabled: true
-  eslint:
+  tslint:
     enabled: true
-    channel: "eslint-4"
+    config: tslint.json
   fixme:
     enabled: true
     config:
@@ -22,10 +22,4 @@ plugins:
       languages:
         javascript:
           mass_threshold: 90
-  stylelint:
-    enabled: true
-
-exclude_paths:
-  - "src/test/"
-  - "src/flow-typed/"
 
