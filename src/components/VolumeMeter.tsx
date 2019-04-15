@@ -75,7 +75,7 @@ class MeterRenderer {
     const {
       prevVolume, canvasCtx, barWidth, height, shape, blocks,
     } = this;
-    const vol = Math.max(volume, prevVolume * 0.95);
+    const vol = Math.max(volume, prevVolume * 0.90);
     this.prevVolume = vol;
     this.clear();
     const volPerBlock = 1 / blocks;
@@ -223,9 +223,9 @@ export class VolumeMeter extends Component<Props> {
   };
 
   private getVolume = () => {
-    this.analyser.getByteTimeDomainData(this.array);
+    this.analyser.getByteFrequencyData(this.array);
 
-    return this.array.reduce((max, vol) => Math.max(max, Math.abs(vol - 128))) / 128;
+    return this.array.reduce((a, b) => a+b) / this.analyser.frequencyBinCount / 128;
   };
 
   private drawer: MeterRenderer;
