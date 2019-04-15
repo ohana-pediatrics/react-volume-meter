@@ -1,6 +1,6 @@
 {
   "name": "@ohanapediatrics/react-volume-meter",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "A volume meter React component",
   "main": "dist/index.js",
   "scripts": {
