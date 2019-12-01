@@ -1,15 +1,18 @@
 {
-  "name": "@ohanapediatrics/react-volume-meter",
+  "name": "@ahanapediatrics/react-volume-meter",
   "version": "2.9.0",
   "description": "A volume meter React component",
   "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
+    "build-storybook": "build-storybook",
+    "dist": "npm run build && npm run release && npm publish",
     "lint": "tslint --project .",
     "prepare": "npm run build",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "release": "standard-version",
+    "storybook": "npm run build && start-storybook -p 6006",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -28,29 +31,40 @@
   },
   "homepage": "https://github.com/ohana-pediatrics/react-volume-meter#readme",
   "peerDependencies": {
-    "react": "^16.5.0"
+    "react": "^16.11.0"
   },
   "devDependencies": {
+    "@ahanapediatrics/storybook-state": "^2.0.6",
     "@babel/core": "^7.4.3",
-    "@dump247/storybook-state": "^1.5.2",
-    "@storybook/addon-actions": "^5.0.8",
-    "@storybook/addon-links": "^5.0.8",
-    "@storybook/addons": "^5.0.8",
-    "@storybook/react": "^5.0.8",
-    "@types/react": "^16.7.21",
-    "@types/react-dom": "^16.0.11",
-    "@types/storybook__react": "^4.0.1",
+    "@storybook/addon-actions": "^5.2.7",
+    "@storybook/addon-links": "^5.2.7",
+    "@storybook/addons": "^5.2.7",
+    "@storybook/react": "^5.2.7",
+    "@types/node": "^12.12.14",
+    "@types/react": "^16.9.13",
+    "@types/react-dom": "^16.9.4",
+    "audio-context-polyfill": "^1.0.0",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.0.5",
-    "react": "^16.4.0",
-    "react-docgen-typescript-loader": "^3.1.0",
-    "react-dom": "^16.4.2",
+    "git-cz": "^3.3.0",
+    "prettier": "^1.19.1",
+    "react": "^16.11.0",
+    "react-docgen-typescript-loader": "^3.6.0",
+    "react-dom": "^16.11.0",
     "rimraf": "^3.0.0",
     "source-map-loader": "^0.2.4",
+    "standard-version": "^7.0.1",
     "tslint": "^5.12.1",
-    "typescript": "^3.2.4",
+    "typescript": "^3.7.2",
     "webpack": "^4.16.5",
     "webpack-command": "^0.5.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@ahanapediatrics/ahana-fp": "^1.2.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "git-cz"
+    }
+  }
 }

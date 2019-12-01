@@ -1,5 +1,7 @@
 # Dependency directory
-node_modules
+/node_modules
 
 # Distribution build
-dist/
+/dist
+
+/.vscode

@@ -1,7 +1,9 @@
-.gitignore
-src/
-.idea/
-stories/
-.storybook/
-node_modules/
-webpack.config.js
+/.gitignore
+/src
+/.idea
+/.storybook
+/node_modules
+/webpack.config.js
+/.vscode
+.codeclimate.yml
+/coverage

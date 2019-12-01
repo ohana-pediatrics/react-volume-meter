@@ -1,1 +1,2 @@
-import '@dump247/storybook-state/register';
+import {register} from '@ahanapediatrics/storybook-state/lib/register';
+register();

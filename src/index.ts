@@ -1,1 +1,1 @@
-export * from './components/VolumeMeter';
+export {VolumeMeter, VmShape} from "./components/VolumeMeter";
