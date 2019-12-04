@@ -60,7 +60,7 @@
     "webpack-command": "^0.5.0"
   },
   "dependencies": {
-    "@ahanapediatrics/ahana-fp": "^1.2.2"
+    "@ahanapediatrics/ahana-fp": "^2.0.0"
   },
   "config": {
     "commitizen": {
