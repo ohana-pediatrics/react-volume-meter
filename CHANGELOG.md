@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.2](https://github.com/ohana-pediatrics/react-volume-meter/compare/v4.0.1...v4.0.2) (2019-12-06)
+
+
+### Bug Fixes
+
+* 🐛 change to the right FP version in peer dependencies ([27ef6be](https://github.com/ohana-pediatrics/react-volume-meter/commit/27ef6be39bf9e5c545d92f3c33abda2b05023260))
+
 ### [4.0.1](https://github.com/ohana-pediatrics/react-volume-meter/compare/v4.0.0...v4.0.1) (2019-12-06)
 
 
