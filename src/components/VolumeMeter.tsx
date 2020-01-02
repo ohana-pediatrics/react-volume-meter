@@ -9,7 +9,7 @@ export enum VmShape {
 }
 
 type Props = {
-  audioContext: AudioContext;
+  audioContext: AudioContext | undefined;
   src: Optional<MediaStreamAudioSourceNode>;
   width: number;
   height: number;
@@ -46,8 +46,11 @@ const getCanvasContext = (
 const setupAnalyzer = ({
   audioContext,
   src
-}: Pick<Props, "audioContext" | "src" | "enabled">) => {
+}: Pick<Props, "audioContext" | "src">) => {
   return src.map(s => {
+    if(typeof audioContext === 'undefined') {
+      return undefined;
+    }
     const analyser = audioContext.createAnalyser();
     s.connect(analyser);
     return analyser;
