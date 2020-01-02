@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.0](https://github.com/ohana-pediatrics/react-volume-meter/compare/v4.0.2...v4.1.0) (2020-01-02)
+
+
+### Features
+
+* 🎸 support undefined AudioContexts ([75bb6d7](https://github.com/ohana-pediatrics/react-volume-meter/commit/75bb6d77e19a690640807615661edd46f4d246e8))
+
 ### [4.0.2](https://github.com/ohana-pediatrics/react-volume-meter/compare/v4.0.1...v4.0.2) (2019-12-06)
 
 
