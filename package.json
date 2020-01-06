@@ -41,7 +41,7 @@
     "@storybook/addon-links": "^5.2.7",
     "@storybook/addons": "^5.2.7",
     "@storybook/react": "^5.2.7",
-    "@types/node": "^12.12.14",
+    "@types/node": "^13.1.4",
     "@types/react": "^16.9.13",
     "@types/react-dom": "^16.9.4",
     "audio-context-polyfill": "^1.0.0",
