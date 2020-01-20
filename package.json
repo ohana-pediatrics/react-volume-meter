@@ -47,7 +47,7 @@
     "audio-context-polyfill": "^1.0.0",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.0.5",
-    "git-cz": "^3.3.0",
+    "git-cz": "^4.1.0",
     "prettier": "^1.19.1",
     "react": "^16.11.0",
     "react-docgen-typescript-loader": "^3.6.0",
