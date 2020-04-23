@@ -1,32 +1,29 @@
 import { Optional } from "@ahanapediatrics/ahana-fp";
-import React, { CSSProperties, RefObject, useEffect, useState } from "react";
+import React, {
+  ReactNode,
+  RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import styled from "styled-components";
 import { Animator } from "./Animator";
 import { MeterRenderer } from "./MeterRenderer";
 
 export enum VmShape {
   VM_STEPPED,
-  VM_FLAT
+  VM_FLAT,
 }
 
 type Props = {
-  audioContext: AudioContext | undefined;
-  src: Optional<MediaStreamAudioSourceNode>;
+  audioContext: AudioContext;
+  stream: Optional<MediaStream>;
   width: number;
   height: number;
   enabled?: boolean;
   shape: VmShape;
   blocks?: number;
-  style?: CSSProperties;
-};
-
-const changedSource = (
-  oldSrc: Optional<MediaStreamAudioSourceNode>,
-  newSrc: Optional<MediaStreamAudioSourceNode>
-): boolean => {
-  return (
-    (oldSrc.isPresent() || newSrc.isPresent()) &&
-    !oldSrc.equals(newSrc, (o, n) => o.mediaStream.id === n.mediaStream.id)
-  );
+  activateButton?: (onClick: () => Promise<void>) => ReactNode;
 };
 
 const getCanvasContext = (
@@ -45,74 +42,105 @@ const getCanvasContext = (
 
 const setupAnalyzer = ({
   audioContext,
-  src
-}: Pick<Props, "audioContext" | "src">) => {
-  return src.map(s => {
-    if(typeof audioContext === 'undefined') {
+  stream,
+}: Pick<Props, "audioContext" | "stream">) => {
+  return stream.map((s) => {
+    if (typeof audioContext === "undefined") {
       return undefined;
     }
+    const node = audioContext.createMediaStreamSource(s);
     const analyser = audioContext.createAnalyser();
-    s.connect(analyser);
+    node.connect(analyser);
     return analyser;
   });
 };
 
-export const VolumeMeter: React.FunctionComponent<Props> = ({
+const defaultActivateButton = (onClick: () => Promise<void>) => (
+  <button type="button" onClick={onClick}>
+    Activate
+  </button>
+);
+
+const StyledVolumeMeter = styled.div<{ width: number; height: number }>`
+  height: ${(props) => props.height}px;
+  width: ${(props) => props.width}px;
+`;
+
+const Bars = styled.canvas<{ show: boolean }>`
+  display: ${(props) => (props.show ? "block" : "none")};
+`;
+
+export const VolumeMeter = ({
   enabled = true,
   width,
   height,
   shape,
   blocks = 5,
   audioContext,
-  style,
-  src
-}) => {
-  const canvas: RefObject<HTMLCanvasElement> = React.createRef();
+  stream,
+  activateButton = defaultActivateButton,
+}: Props) => {
+  const canvas: RefObject<HTMLCanvasElement> = useRef(null);
   const [animator, setAnimator] = useState(Optional.empty<Animator>());
+  const [contextState, setContextState] = useState(audioContext.state);
+
+  useEffect(() => {
+    setContextState(audioContext.state);
+  }, [audioContext]);
 
   useEffect(() => {
     {
       const canvasCtx = getCanvasContext(canvas.current);
 
-      const drawer = new MeterRenderer(canvasCtx, {
+      const renderer = new MeterRenderer(canvasCtx, {
         width,
         height,
         shape,
-        blocks
+        blocks,
       });
 
-      drawer.stop();
-    
-      setAnimator(Optional.of(
-        new Animator(setupAnalyzer({ audioContext, src }), enabled, drawer)
-      ));
+      setAnimator(
+        Optional.of(
+          new Animator(
+            setupAnalyzer({ audioContext, stream }),
+            enabled,
+            renderer
+          )
+        )
+      );
     }
-  }, []);
+  }, [canvas, audioContext, stream, contextState]);
 
   useEffect(() => {
-    animator.ifPresent(a => {
+    animator.ifPresent((a) => {
       a.stop();
-      a.updateAnalyzer(setupAnalyzer({ audioContext, src }));
+      a.updateAnalyzer(setupAnalyzer({ audioContext, stream }));
       a.enable(enabled);
     });
     return () => {
-      animator.ifPresent(a => {
+      animator.ifPresent((a) => {
         a.stop();
       });
     };
-  }, [src]);
+  }, [stream, animator, audioContext, enabled, contextState]);
 
   useEffect(() => {
-    animator.ifPresent(a => a.enable(enabled));
+    animator.ifPresent((a) => a.enable(enabled));
   }, [enabled]);
 
   return (
-    <canvas
-      className="volume-meter"
-      ref={canvas}
-      width={width}
-      height={height}
-      style={style}
-    />
+    <StyledVolumeMeter width={width} height={height}>
+      {contextState !== "running" &&
+        activateButton(() =>
+          audioContext.resume().then(() => setContextState(audioContext.state))
+        )}
+      <Bars
+        show={contextState === "running"}
+        className="volume-meter"
+        ref={canvas}
+        width={width}
+        height={height}
+      />
+    </StyledVolumeMeter>
   );
 };

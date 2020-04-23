@@ -1,5 +1,5 @@
-import { MeterRenderer } from "./MeterRenderer";
 import { Optional } from "@ahanapediatrics/ahana-fp";
+import { MeterRenderer } from "./MeterRenderer";
 
 const getVolume = (analyser: AnalyserNode) => {
   const buckets = new Uint8Array(analyser.frequencyBinCount);
@@ -11,17 +11,17 @@ const getVolume = (analyser: AnalyserNode) => {
 export class Animator {
   private enabled: boolean = false;
   private rafId: number = 0;
-  private drawer: MeterRenderer;
+  private renderer: MeterRenderer;
   private analyser: Optional<AnalyserNode>;
 
   constructor(
     analyser: Optional<AnalyserNode>,
     enabled: boolean,
-    drawer: MeterRenderer
+    renderer: MeterRenderer
   ) {
     this.analyser = analyser;
     this.enabled = enabled;
-    this.drawer = drawer;
+    this.renderer = renderer;
     if (enabled) {
       this.start();
     }
@@ -34,8 +34,8 @@ export class Animator {
   }
 
   enable(state: boolean) {
-    if(this.enabled === state) {
-        return;
+    if (this.enabled === state) {
+      return;
     }
     this.enabled = state;
     if (!state) {
@@ -45,16 +45,16 @@ export class Animator {
     }
   }
 
-  start = () => {
-    this.drawer.start();
+  private start = () => {
+    this.renderer.start();
 
     const drawLoop = () => {
       if (!this.enabled) {
         return;
       }
-      this.analyser.ifPresent(analyser => {
+      this.analyser.ifPresent((analyser) => {
         const volume = getVolume(analyser);
-        this.drawer.draw(volume);
+        this.renderer.draw(volume);
         this.rafId = window.requestAnimationFrame(drawLoop);
       });
     };
@@ -63,7 +63,7 @@ export class Animator {
   };
 
   stop = () => {
-    this.drawer.stop();
+    this.renderer.stop();
     window.cancelAnimationFrame(this.rafId);
   };
 }
