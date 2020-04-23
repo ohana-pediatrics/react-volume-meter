@@ -17,11 +17,11 @@ type State = {
 };
 
 export const base = ({ store }: { store: Store<State> }) => {
-  store.state.audioContext.onstatechange = () => {
+  store.state.audioContext.addEventListener("statechange", () => {
     store.set({
       contextState: store.state.audioContext.state,
     });
-  };
+  });
   if (!store.state.stream.isPresent()) {
     // tslint:disable-next-line: no-floating-promises
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
@@ -73,11 +73,11 @@ export const withInputSelection = ({
 }: {
   store: Store<OptionsState>;
 }) => {
-  store.state.audioContext.onstatechange = () => {
+  store.state.audioContext.addEventListener("statechange", () => {
     store.set({
       contextState: store.state.audioContext.state,
     });
-  };
+  });
   if (!store.state.stream.isPresent()) {
     // tslint:disable-next-line: no-floating-promises
     navigator.mediaDevices
@@ -153,11 +153,11 @@ withInputSelection.story = {
 };
 
 export const withActivateButton = ({ store }: { store: Store<State> }) => {
-  store.state.audioContext.onstatechange = () => {
+  store.state.audioContext.addEventListener("statechange", () => {
     store.set({
       contextState: store.state.audioContext.state,
     });
-  };
+  });
   if (!store.state.stream.isPresent()) {
     // tslint:disable-next-line: no-floating-promises
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {

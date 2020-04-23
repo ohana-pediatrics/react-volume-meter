@@ -2,6 +2,7 @@ import { Optional } from "@ahanapediatrics/ahana-fp";
 import React, {
   ReactNode,
   RefObject,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -83,6 +84,17 @@ export const VolumeMeter = ({
   const canvas: RefObject<HTMLCanvasElement> = useRef(null);
   const [animator, setAnimator] = useState(Optional.empty<Animator>());
   const [contextState, setContextState] = useState(audioContext.state);
+
+  const onStateChange = useCallback(() => {
+    setContextState(audioContext.state);
+  }, [audioContext]);
+
+  useEffect(() => {
+    audioContext.addEventListener("statechange", onStateChange);
+    return () => {
+      audioContext.removeEventListener("statechange", onStateChange);
+    };
+  }, [audioContext]);
 
   useEffect(() => {
     setContextState(audioContext.state);
