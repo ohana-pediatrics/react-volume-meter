@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.1.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.0.1...v5.1.0) (2020-04-23)
+
+
+### Features
+
+* 🎸 display message if there is no input ([7fa8a73](https://github.com/ahana-pediatrics/react-volume-meter/commit/7fa8a73ec3edd2885825f4c9b9c2d2ca49d1a666))
+
 ### [5.0.1](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.0.0...v5.0.1) (2020-04-23)
 
 
