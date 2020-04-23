@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 import { Animator } from "./Animator";
-import { Bars, NoStream, StyledVolumeMeter } from "./layout";
+import { Alert, Bars, Clickable, StyledVolumeMeter } from "./layout";
 import { MeterRenderer } from "./MeterRenderer";
 
 export enum VmShape {
@@ -75,10 +75,16 @@ export const VolumeMeter = ({
   const canvas: RefObject<HTMLCanvasElement> = useRef(null);
   const [animator, setAnimator] = useState(Optional.empty<Animator>());
   const [contextState, setContextState] = useState(audioContext.state);
+  const [trackEnabled, _setTrackEnabled] = useState(true);
+  const [trackMuted, setTrackMuted] = useState(false);
 
   const onStateChange = useCallback(() => {
     setContextState(audioContext.state);
   }, [audioContext]);
+
+  const setTrackEnabled = (e: boolean) => {
+    _setTrackEnabled(e);
+  };
 
   useEffect(() => {
     audioContext.addEventListener("statechange", onStateChange);
@@ -86,6 +92,38 @@ export const VolumeMeter = ({
       audioContext.removeEventListener("statechange", onStateChange);
     };
   }, [audioContext]);
+
+  const onTrackMute = useCallback(() => {
+    setTrackMuted(true);
+  }, []);
+  const onTrackUnmute = useCallback(() => {
+    setTrackMuted(false);
+  }, []);
+
+  useEffect(() => {
+    if (stream.isPresent()) {
+      const s = stream.get();
+      const tr = s.getAudioTracks()[0];
+      if (tr) {
+        setTrackMuted(tr.muted);
+        tr.addEventListener("mute", onTrackMute);
+        tr.addEventListener("unmute", onTrackUnmute);
+      }
+      return () => {
+        tr.removeEventListener("mute", onTrackMute);
+        tr.removeEventListener("unmute", onTrackUnmute);
+      };
+    }
+    return () => {};
+  }, [stream]);
+
+  useEffect(() => {
+    stream.ifPresent((s) => {
+      s.getAudioTracks().map((a) => {
+        a.enabled = trackEnabled;
+      });
+    });
+  }, [trackEnabled, stream]);
 
   useEffect(() => {
     setContextState(audioContext.state);
@@ -131,6 +169,8 @@ export const VolumeMeter = ({
     animator.ifPresent((a) => a.enable(enabled));
   }, [enabled]);
 
+  const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
+
   return (
     <StyledVolumeMeter width={width} height={height}>
       {contextState !== "running" &&
@@ -144,8 +184,27 @@ export const VolumeMeter = ({
         width={width}
         height={height}
       />
-      {!stream.isPresent() && (
-        <NoStream height={height}>No Audio Input detected</NoStream>
+      {contextState === "running" && (
+        <>
+          {!stream.isPresent() && (
+            <Alert height={height}>No Audio Input detected</Alert>
+          )}
+          {track.isPresent() && trackMuted && (
+            <Alert height={height}>Audio Input halted</Alert>
+          )}
+          {track.isPresent() && !trackMuted && !trackEnabled && (
+            <Alert height={height}>
+              Audio is muted.{" "}
+              <Clickable
+                onClick={() => {
+                  setTrackEnabled(true);
+                }}
+              >
+                Click to unmute
+              </Clickable>
+            </Alert>
+          )}
+        </>
       )}
     </StyledVolumeMeter>
   );

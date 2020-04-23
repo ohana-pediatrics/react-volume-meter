@@ -53,7 +53,6 @@ export const base = ({ store }: { store: Store<State> }) => {
   );
 };
 
-const a = new AudioContext();
 base.story = {
   decorators: [
     StateDecorator({
@@ -223,6 +222,46 @@ export const withNoInputStream = ({ store }: { store: Store<State> }) => {
 };
 
 withNoInputStream.story = {
+  decorators: [
+    StateDecorator({
+      ...getAudioContext(),
+      stream: Optional.empty(),
+    }),
+  ],
+};
+
+export const withDisabledStream = ({ store }: { store: Store<State> }) => {
+  store.state.audioContext.addEventListener("statechange", () => {
+    store.set({
+      contextState: store.state.audioContext.state,
+    });
+  });
+  if (!store.state.stream.isPresent()) {
+    // tslint:disable-next-line: no-floating-promises
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      stream.getAudioTracks().map((t) => (t.enabled = false));
+      store.set({
+        stream: Optional.of(stream),
+      });
+    });
+  }
+  return (
+    <div>
+      <VolumeMeter
+        blocks={20}
+        stream={store.state.stream}
+        height={50}
+        shape={VmShape.VM_FLAT}
+        width={300}
+        audioContext={store.state.audioContext}
+      />
+
+      <div>Audio Context State: {store.state.contextState}</div>
+    </div>
+  );
+};
+
+withDisabledStream.story = {
   decorators: [
     StateDecorator({
       ...getAudioContext(),

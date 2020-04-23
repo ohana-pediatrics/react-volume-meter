@@ -11,7 +11,7 @@ export const Bars = styled.canvas<{ show: boolean }>`
 `;
 
 const margin = 10;
-export const NoStream = styled.div<{ height: number }>`
+export const Alert = styled.div<{ height: number }>`
   position: absolute;
   top: ${margin}px;
   bottom: ${margin}px;
@@ -21,4 +21,9 @@ export const NoStream = styled.div<{ height: number }>`
   margin: auto;
   text-align: center;
   background-color: lightgray;
+`;
+
+export const Clickable = styled.span`
+  cursor: pointer;
+  text-decoration: underline;
 `;
