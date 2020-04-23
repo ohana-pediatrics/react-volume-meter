@@ -7,8 +7,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import styled from "styled-components";
 import { Animator } from "./Animator";
+import { Bars, NoStream, StyledVolumeMeter } from "./layout";
 import { MeterRenderer } from "./MeterRenderer";
 
 export enum VmShape {
@@ -61,15 +61,6 @@ const defaultActivateButton = (onClick: () => Promise<void>) => (
     Activate
   </button>
 );
-
-const StyledVolumeMeter = styled.div<{ width: number; height: number }>`
-  height: ${(props) => props.height}px;
-  width: ${(props) => props.width}px;
-`;
-
-const Bars = styled.canvas<{ show: boolean }>`
-  display: ${(props) => (props.show ? "block" : "none")};
-`;
 
 export const VolumeMeter = ({
   enabled = true,
@@ -153,6 +144,9 @@ export const VolumeMeter = ({
         width={width}
         height={height}
       />
+      {!stream.isPresent() && (
+        <NoStream height={height}>No Audio Input detected</NoStream>
+      )}
     </StyledVolumeMeter>
   );
 };

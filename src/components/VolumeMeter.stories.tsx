@@ -10,6 +10,13 @@ export default {
   component: VolumeMeter,
 };
 
+const getAudioContext = () => {
+  const audioContext = new AudioContext();
+  const contextState = audioContext.state;
+
+  return { audioContext, contextState };
+};
+
 type State = {
   audioContext: AudioContext;
   contextState: string;
@@ -50,8 +57,7 @@ const a = new AudioContext();
 base.story = {
   decorators: [
     StateDecorator({
-      audioContext: a,
-      contextState: a.state,
+      ...getAudioContext(),
       stream: Optional.empty(),
     }),
   ],
@@ -139,12 +145,10 @@ export const withInputSelection = ({
   );
 };
 
-const c = new AudioContext();
 withInputSelection.story = {
   decorators: [
     StateDecorator({
-      audioContext: c,
-      contextState: c.state,
+      ...getAudioContext(),
       stream: Optional.empty(),
       audioDevices: [],
       selectedId: "",
@@ -187,12 +191,41 @@ export const withActivateButton = ({ store }: { store: Store<State> }) => {
   );
 };
 
-const b = new AudioContext();
 withActivateButton.story = {
   decorators: [
     StateDecorator({
-      audioContext: b,
-      contextState: b.state,
+      ...getAudioContext(),
+      stream: Optional.empty(),
+    }),
+  ],
+};
+
+export const withNoInputStream = ({ store }: { store: Store<State> }) => {
+  store.state.audioContext.addEventListener("statechange", () => {
+    store.set({
+      contextState: store.state.audioContext.state,
+    });
+  });
+  return (
+    <div>
+      <VolumeMeter
+        blocks={20}
+        stream={store.state.stream}
+        height={50}
+        shape={VmShape.VM_FLAT}
+        width={300}
+        audioContext={store.state.audioContext}
+      />
+
+      <div>Audio Context State: {store.state.contextState}</div>
+    </div>
+  );
+};
+
+withNoInputStream.story = {
+  decorators: [
+    StateDecorator({
+      ...getAudioContext(),
       stream: Optional.empty(),
     }),
   ],
