@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.2.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.1.0...v5.2.0) (2020-04-23)
+
+
+### Features
+
+* 🎸 provide ability to unmute ([329de70](https://github.com/ahana-pediatrics/react-volume-meter/commit/329de70e45b5987d3765b846d7b6e32ab41b489a))
+
 ## [5.1.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.0.1...v5.1.0) (2020-04-23)
 
 
