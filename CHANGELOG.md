@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v4.1.1...v5.0.0) (2020-04-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* 🧨 Brand new interface that is not backward compatible
+
+### Features
+
+* 🎸 update interface to take stream instead of node ([f99d2c4](https://github.com/ahana-pediatrics/react-volume-meter/commit/f99d2c47e3388081b8930553acb0e564dddaa405))
+
 ### [4.1.1](https://github.com/ohana-pediatrics/react-volume-meter/compare/v4.1.0...v4.1.1) (2020-04-22)
 
 ## [4.1.0](https://github.com/ohana-pediatrics/react-volume-meter/compare/v4.0.2...v4.1.0) (2020-01-02)
