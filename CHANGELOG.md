@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.3.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.2.0...v5.3.0) (2020-04-27)
+
+
+### Features
+
+* 🎸 add CircleRenderer; improve mute response ([8cc3571](https://github.com/ahana-pediatrics/react-volume-meter/commit/8cc3571a8f702d2666a53b4778c8405376e0b5b5))
+
 ## [5.2.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.1.0...v5.2.0) (2020-04-23)
 
 
