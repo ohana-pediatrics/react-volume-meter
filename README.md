@@ -1,4 +1,5 @@
 # react-volume-meter
+
 A volume meter react component
 
 ## Installation
@@ -9,13 +10,13 @@ npm install react-volume-meter
 
 ## Example
 
-Run `npx styleguidist server`, then navigate to http://localhost:6060 to
+Run `npm run storybook`, then navigate to http://localhost:6006 to
 see some examples.
 
 ## Overview
 
 This component animates a volume meter through an HTML5 `canvas` element.
-It takes a Web Audio node as input, creates an `AnalyserNode`, and
+It takes a Web Audio stream as input, creates an `AnalyserNode`, and
 computes the volume, which it then displays through the `canvas` element.
 
 ## Props
@@ -28,13 +29,11 @@ If you use the Web Audio API elsewhere on the page, be sure to pass the
 instance of `AudioContext` to this component, since you should
 generally only have one instantiation per page.
 
-### src
+### stream
 
 Optional, although the animation won't start properly without it.
-A Web Audio Node object that implements the `connect` method.
-For example, you can call `audioContext.createMediaStreamSource(stream)`
-to create a node from the stream object returned by a `navigator.getUserMedia`
-recording.
+A Web Audio Stream object returned by a `navigator.getUserMedia`
+call.
 
 ### width
 
@@ -55,10 +54,6 @@ maximum is 255 but chances are you'll never get that high in normal use.
 When the volume exceeds the `maxVolume` level, the final bar of the
 meter turns red. Defaults to 50, which seems to work well for microphone
 recordings of normal human speech.
-
-### style
-
-Optional. Style of the canvas element.
 
 ### blocks
 

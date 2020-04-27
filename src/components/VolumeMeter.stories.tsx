@@ -230,7 +230,11 @@ withNoInputStream.story = {
   ],
 };
 
-export const withDisabledStream = ({ store }: { store: Store<State> }) => {
+export const withDisabledStream = ({
+  store,
+}: {
+  store: Store<State & { enabled: boolean }>;
+}) => {
   store.state.audioContext.addEventListener("statechange", () => {
     store.set({
       contextState: store.state.audioContext.state,
@@ -239,12 +243,13 @@ export const withDisabledStream = ({ store }: { store: Store<State> }) => {
   if (!store.state.stream.isPresent()) {
     // tslint:disable-next-line: no-floating-promises
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      stream.getAudioTracks().map((t) => (t.enabled = false));
+      stream.getAudioTracks().map((t) => (t.enabled = store.state.enabled));
       store.set({
         stream: Optional.of(stream),
       });
     });
   }
+
   return (
     <div>
       <VolumeMeter
@@ -257,6 +262,20 @@ export const withDisabledStream = ({ store }: { store: Store<State> }) => {
       />
 
       <div>Audio Context State: {store.state.contextState}</div>
+      <div>
+        <button
+          onClick={() => {
+            store.state.stream.ifPresent((s) =>
+              s.getAudioTracks().map((t) => (t.enabled = !store.state.enabled))
+            );
+            store.set({
+              enabled: !store.state.enabled,
+            });
+          }}
+        >
+          {store.state.enabled ? "Mute" : "Unmute"}
+        </button>
+      </div>
     </div>
   );
 };
@@ -266,6 +285,7 @@ withDisabledStream.story = {
     StateDecorator({
       ...getAudioContext(),
       stream: Optional.empty(),
+      enabled: false,
     }),
   ],
 };

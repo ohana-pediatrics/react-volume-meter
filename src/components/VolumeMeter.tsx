@@ -8,10 +8,12 @@ import React, {
   useState,
 } from "react";
 import { Animator } from "./Animator";
+import { BlockRenderer } from "./BlockRenderer";
+import { CircleRenderer } from "./CircleRenderer";
 import { Alert, Bars, Clickable, StyledVolumeMeter } from "./layout";
-import { MeterRenderer } from "./MeterRenderer";
 
 export enum VmShape {
+  VM_CIRCLE,
   VM_STEPPED,
   VM_FLAT,
 }
@@ -62,6 +64,44 @@ const defaultActivateButton = (onClick: () => Promise<void>) => (
   </button>
 );
 
+const monitorEnabled = (
+  track: MediaStreamTrack & { watched?: boolean },
+  onChange: (e: boolean) => unknown
+) => {
+  if (track.watched) {
+    return;
+  }
+  const original = Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(track),
+    "enabled"
+  );
+  if (!original) {
+    throw new Error('Cannot stalk "enabled"');
+  }
+  let { get: getter, set: setter } = original;
+
+  let _enabled = track.enabled;
+
+  getter = function () {
+    return _enabled;
+  };
+
+  Object.defineProperty(track, "enabled", {
+    configurable: true,
+    enumerable: true,
+    get: getter,
+    set: function (e) {
+      console.log(`Changed to ${e}`);
+      _enabled = e;
+      setter!.call(track, e);
+      onChange(e);
+    },
+  });
+  Object.defineProperty(track, "watched", {
+    value: true,
+  });
+};
+
 export const VolumeMeter = ({
   enabled = true,
   width,
@@ -75,15 +115,19 @@ export const VolumeMeter = ({
   const canvas: RefObject<HTMLCanvasElement> = useRef(null);
   const [animator, setAnimator] = useState(Optional.empty<Animator>());
   const [contextState, setContextState] = useState(audioContext.state);
-  const [trackEnabled, _setTrackEnabled] = useState(true);
-  const [trackMuted, setTrackMuted] = useState(false);
+  const [trackEnabled, setTrackEnabled] = useState(true);
+  const [unableToProvideData, setUnableToProvideData] = useState(false);
 
   const onStateChange = useCallback(() => {
     setContextState(audioContext.state);
   }, [audioContext]);
 
-  const setTrackEnabled = (e: boolean) => {
-    _setTrackEnabled(e);
+  const enableTrack = (e: boolean) => {
+    if (stream.isPresent()) {
+      const s = stream.get();
+      const tr = s.getAudioTracks()[0];
+      tr.enabled = e;
+    }
   };
 
   useEffect(() => {
@@ -93,11 +137,11 @@ export const VolumeMeter = ({
     };
   }, [audioContext]);
 
-  const onTrackMute = useCallback(() => {
-    setTrackMuted(true);
+  const onUnableToProvideData = useCallback(() => {
+    setUnableToProvideData(true);
   }, []);
-  const onTrackUnmute = useCallback(() => {
-    setTrackMuted(false);
+  const onAbleToProvideData = useCallback(() => {
+    setUnableToProvideData(false);
   }, []);
 
   useEffect(() => {
@@ -105,25 +149,19 @@ export const VolumeMeter = ({
       const s = stream.get();
       const tr = s.getAudioTracks()[0];
       if (tr) {
-        setTrackMuted(tr.muted);
-        tr.addEventListener("mute", onTrackMute);
-        tr.addEventListener("unmute", onTrackUnmute);
+        setTrackEnabled(tr.enabled);
+        monitorEnabled(tr, setTrackEnabled);
+        setUnableToProvideData(tr.muted);
+        tr.addEventListener("mute", onUnableToProvideData);
+        tr.addEventListener("unmute", onAbleToProvideData);
       }
       return () => {
-        tr.removeEventListener("mute", onTrackMute);
-        tr.removeEventListener("unmute", onTrackUnmute);
+        tr.removeEventListener("mute", onUnableToProvideData);
+        tr.removeEventListener("unmute", onAbleToProvideData);
       };
     }
     return () => {};
   }, [stream]);
-
-  useEffect(() => {
-    stream.ifPresent((s) => {
-      s.getAudioTracks().map((a) => {
-        a.enabled = trackEnabled;
-      });
-    });
-  }, [trackEnabled, stream]);
 
   useEffect(() => {
     setContextState(audioContext.state);
@@ -133,12 +171,19 @@ export const VolumeMeter = ({
     {
       const canvasCtx = getCanvasContext(canvas.current);
 
-      const renderer = new MeterRenderer(canvasCtx, {
-        width,
-        height,
-        shape,
-        blocks,
-      });
+      const renderer =
+        shape === VmShape.VM_CIRCLE
+          ? new CircleRenderer(canvasCtx, {
+              width,
+              height,
+              shape,
+            })
+          : new BlockRenderer(canvasCtx, {
+              width,
+              height,
+              shape,
+              blocks,
+            });
 
       setAnimator(
         Optional.of(
@@ -171,6 +216,8 @@ export const VolumeMeter = ({
 
   const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
 
+  console.log("render");
+
   return (
     <StyledVolumeMeter width={width} height={height}>
       {contextState !== "running" &&
@@ -189,15 +236,15 @@ export const VolumeMeter = ({
           {!stream.isPresent() && (
             <Alert height={height}>No Audio Input detected</Alert>
           )}
-          {track.isPresent() && trackMuted && (
+          {track.isPresent() && unableToProvideData && (
             <Alert height={height}>Audio Input halted</Alert>
           )}
-          {track.isPresent() && !trackMuted && !trackEnabled && (
+          {track.isPresent() && !unableToProvideData && !trackEnabled && (
             <Alert height={height}>
               Audio is muted.{" "}
               <Clickable
                 onClick={() => {
-                  setTrackEnabled(true);
+                  enableTrack(true);
                 }}
               >
                 Click to unmute
