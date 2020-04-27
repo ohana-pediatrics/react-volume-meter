@@ -8,7 +8,7 @@
     "build": "webpack",
     "build-storybook": "build-storybook",
     "dist": "npm run build && npm run release && npm publish",
-    "lint": "tslint --project .",
+    "lint": "eslint -c .eslintrc.js --ext .ts src",
     "prepare": "npm run build",
     "release": "standard-version",
     "storybook": "npm run build && start-storybook -p 6006",
@@ -46,9 +46,13 @@
     "@types/react": "^16.9.13",
     "@types/react-dom": "^16.9.4",
     "@types/styled-components": "4.1.8",
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
     "audio-context-polyfill": "^1.0.0",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.11.0",
     "git-cz": "^4.3.1",
     "prettier": "^2.0.5",
     "react": "^16.13.1",
@@ -58,7 +62,6 @@
     "source-map-loader": "^0.2.4",
     "standard-version": "^7.1.0",
     "styled-components": "^5.1.0",
-    "tslint": "^6.1.1",
     "typescript": "^3.7.2",
     "webpack": "^4.16.5",
     "webpack-command": "^0.5.0"
@@ -67,5 +70,6 @@
     "commitizen": {
       "path": "git-cz"
     }
-  }
+  },
+  "dependencies": {}
 }

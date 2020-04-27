@@ -45,7 +45,7 @@ export class Animator {
     }
   }
 
-  private start = () => {
+  private start() {
     this.renderer.start();
 
     const drawLoop = () => {
@@ -60,10 +60,10 @@ export class Animator {
     };
 
     drawLoop();
-  };
+  }
 
-  stop = () => {
+  stop() {
     this.renderer.stop();
     window.cancelAnimationFrame(this.rafId);
-  };
+  }
 }
