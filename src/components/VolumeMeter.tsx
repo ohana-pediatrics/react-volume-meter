@@ -248,10 +248,12 @@ export const VolumeMeter = ({
   }, [enabled]);
 
   const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
+  const trackCount = stream.map((s) => s.getAudioTracks().length).orElse(0);
 
   // prettier-ignore
   const error = 
   !track.isPresent()      ?   ("No Audio Input detected")                           : 
+  trackCount !== 1        ?   (`There are ${trackCount} tracks`)             :
   unableToProvideData     ?   ("Audio Input halted")                                : 
   !trackEnabled           ?   ( <>
                                   Audio is muted.{" "}
