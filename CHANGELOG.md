@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.5.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.4.0...v5.5.0) (2020-04-28)
+
+
+### Features
+
+* 🎸 report multiple tracks in a stream ([7bc5203](https://github.com/ahana-pediatrics/react-volume-meter/commit/7bc520360db439613d48ae8aa6f154360cf45e7f))
+
 ## [5.4.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.3.0...v5.4.0) (2020-04-28)
 
 
