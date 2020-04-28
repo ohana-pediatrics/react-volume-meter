@@ -6,7 +6,7 @@ export const StyledVolumeMeter = styled.div<{ width: number; height: number }>`
   position: relative;
 `;
 
-export const Bars = styled.canvas<{ show: boolean }>`
+export const MeterDisplay = styled.canvas<{ show: boolean }>`
   display: ${(props) => (props.show ? "block" : "none")};
 `;
 

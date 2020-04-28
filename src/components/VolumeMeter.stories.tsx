@@ -30,12 +30,17 @@ export const base = ({ store }: { store: Store<State> }) => {
     });
   });
   if (!store.state.stream.isPresent()) {
-    // tslint:disable-next-line: no-floating-promises
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      store.set({
-        stream: Optional.of(stream),
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        store.set({
+          stream: Optional.of(stream),
+        });
+      })
+      .catch((e) => {
+        console.error("Error getting UserMedia");
+        console.error(e);
       });
-    });
   }
   return (
     <div>
@@ -84,7 +89,6 @@ export const withInputSelection = ({
     });
   });
   if (!store.state.stream.isPresent()) {
-    // tslint:disable-next-line: no-floating-promises
     navigator.mediaDevices
       .enumerateDevices()
       .then((devices: MediaDeviceInfo[]) => {
@@ -97,6 +101,10 @@ export const withInputSelection = ({
         store.set({
           stream: Optional.of(stream),
         });
+      })
+      .catch((e) => {
+        console.error("Error getting UserMedia");
+        console.error(e);
       });
   }
 
@@ -125,11 +133,16 @@ export const withInputSelection = ({
           onChange={(e) => {
             store.set({ selectedId: e.target.value });
             // tslint:disable-next-line: no-floating-promises
-            selectStream(e.target.value).then((stream) => {
-              store.set({
-                stream: Optional.of(stream),
+            selectStream(e.target.value)
+              .then((stream) => {
+                store.set({
+                  stream: Optional.of(stream),
+                });
+              })
+              .catch((e2) => {
+                console.error("Error selecting stream");
+                console.error(e2);
               });
-            });
           }}
         >
           <option disabled>Please select an input...</option>
@@ -162,12 +175,17 @@ export const withActivateButton = ({ store }: { store: Store<State> }) => {
     });
   });
   if (!store.state.stream.isPresent()) {
-    // tslint:disable-next-line: no-floating-promises
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      store.set({
-        stream: Optional.of(stream),
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        store.set({
+          stream: Optional.of(stream),
+        });
+      })
+      .catch((e) => {
+        console.error("Error getting UserMedia");
+        console.error(e);
       });
-    });
   }
   return (
     <div>
@@ -241,13 +259,18 @@ export const withDisabledStream = ({
     });
   });
   if (!store.state.stream.isPresent()) {
-    // tslint:disable-next-line: no-floating-promises
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      stream.getAudioTracks().map((t) => (t.enabled = store.state.enabled));
-      store.set({
-        stream: Optional.of(stream),
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        stream.getAudioTracks().map((t) => (t.enabled = store.state.enabled));
+        store.set({
+          stream: Optional.of(stream),
+        });
+      })
+      .catch((e) => {
+        console.error("Error getting UserMedia");
+        console.error(e);
       });
-    });
   }
 
   return (
@@ -286,6 +309,62 @@ withDisabledStream.story = {
       ...getAudioContext(),
       stream: Optional.empty(),
       enabled: false,
+    }),
+  ],
+};
+
+export const withStoppableStream = ({ store }: { store: Store<State> }) => {
+  store.state.audioContext.addEventListener("statechange", () => {
+    store.set({
+      contextState: store.state.audioContext.state,
+    });
+  });
+  if (!store.state.stream.isPresent()) {
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        store.set({
+          stream: Optional.of(stream),
+        });
+      })
+      .catch((e) => {
+        console.error("Error getting UserMedia");
+        console.error(e);
+      });
+  }
+
+  return (
+    <div>
+      <VolumeMeter
+        blocks={20}
+        stream={store.state.stream}
+        height={50}
+        shape={VmShape.VM_FLAT}
+        width={300}
+        audioContext={store.state.audioContext}
+      />
+
+      <div>Audio Context State: {store.state.contextState}</div>
+      <div>
+        <button
+          onClick={() => {
+            store.state.stream.ifPresent((s) =>
+              s.getAudioTracks().map((t) => t.stop())
+            );
+          }}
+        >
+          Stop{" "}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+withStoppableStream.story = {
+  decorators: [
+    StateDecorator({
+      ...getAudioContext(),
+      stream: Optional.empty(),
     }),
   ],
 };

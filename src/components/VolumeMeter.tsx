@@ -10,7 +10,7 @@ import React, {
 import { Animator } from "./Animator";
 import { BlockRenderer } from "./BlockRenderer";
 import { CircleRenderer } from "./CircleRenderer";
-import { Alert, Bars, Clickable, StyledVolumeMeter } from "./layout";
+import { Alert, Clickable, MeterDisplay, StyledVolumeMeter } from "./layout";
 
 export enum VmShape {
   VM_CIRCLE,
@@ -64,39 +64,58 @@ const defaultActivateButton = (onClick: () => Promise<void>) => (
   </button>
 );
 
-const monitorEnabled = (
+type MonitorOptions = {
+  onEnabledChanged: (e: boolean) => unknown;
+  onStopCalled: () => unknown;
+};
+const monitorTrack = (
   track: MediaStreamTrack & { watched?: boolean },
-  onChange: (e: boolean) => unknown
+  { onEnabledChanged, onStopCalled }: MonitorOptions
 ) => {
   if (track.watched) {
     return;
   }
-  const original = Object.getOwnPropertyDescriptor(
+  const originalEnabled = Object.getOwnPropertyDescriptor(
     Object.getPrototypeOf(track),
     "enabled"
   );
-  if (!original) {
+  if (!originalEnabled) {
     throw new Error('Cannot stalk "enabled"');
   }
-  let { get: getter, set: setter } = original;
+  const { set: setter } = originalEnabled;
+
+  const originalStop = Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(track),
+    "stop"
+  );
+  if (!originalStop) {
+    throw new Error('Cannot stalk "stop"');
+  }
 
   let _enabled = track.enabled;
 
-  getter = function () {
-    return _enabled;
-  };
-
   Object.defineProperty(track, "enabled", {
-    configurable: true,
-    enumerable: true,
-    get: getter,
+    configurable: originalEnabled.configurable,
+    enumerable: originalEnabled.enumerable,
+    get: function () {
+      return _enabled;
+    },
     set: function (e) {
-      console.log(`Changed to ${e}`);
       _enabled = e;
       setter!.call(track, e);
-      onChange(e);
+      onEnabledChanged(e);
     },
   });
+
+  Object.defineProperty(track, "stop", {
+    configurable: originalStop.configurable,
+    enumerable: originalStop.enumerable,
+    value: function () {
+      onStopCalled();
+      return originalStop.value();
+    },
+  });
+
   Object.defineProperty(track, "watched", {
     value: true,
   });
@@ -117,6 +136,7 @@ export const VolumeMeter = ({
   const [contextState, setContextState] = useState(audioContext.state);
   const [trackEnabled, setTrackEnabled] = useState(true);
   const [unableToProvideData, setUnableToProvideData] = useState(false);
+  const [hasEnded, setHasEnded] = useState(false);
 
   const onStateChange = useCallback(() => {
     setContextState(audioContext.state);
@@ -143,6 +163,9 @@ export const VolumeMeter = ({
   const onAbleToProvideData = useCallback(() => {
     setUnableToProvideData(false);
   }, []);
+  const onTrackHasEnded = useCallback(() => {
+    setHasEnded(true);
+  }, []);
 
   useEffect(() => {
     if (stream.isPresent()) {
@@ -150,14 +173,24 @@ export const VolumeMeter = ({
       const tr = s.getAudioTracks()[0];
       if (tr) {
         setTrackEnabled(tr.enabled);
-        monitorEnabled(tr, setTrackEnabled);
+        monitorTrack(tr, {
+          onEnabledChanged: setTrackEnabled,
+          onStopCalled: () => {
+            setHasEnded(true);
+          },
+        });
+
         setUnableToProvideData(tr.muted);
         tr.addEventListener("mute", onUnableToProvideData);
         tr.addEventListener("unmute", onAbleToProvideData);
+
+        setHasEnded(tr.readyState === "ended");
+        tr.addEventListener("ended", onTrackHasEnded);
       }
       return () => {
         tr.removeEventListener("mute", onUnableToProvideData);
         tr.removeEventListener("unmute", onAbleToProvideData);
+        tr.removeEventListener("ended", onTrackHasEnded);
       };
     }
     return () => {};
@@ -216,7 +249,23 @@ export const VolumeMeter = ({
 
   const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
 
-  console.log("render");
+  // prettier-ignore
+  const error = 
+  !track.isPresent()      ?   ("No Audio Input detected")                           : 
+  unableToProvideData     ?   ("Audio Input halted")                                : 
+  !trackEnabled           ?   ( <>
+                                  Audio is muted.{" "}
+                                  <Clickable
+                                    onClick={() => {
+                                      enableTrack(true);
+                                    }}
+                                  >
+                                    Click to unmute
+                                  </Clickable>
+                                </>
+                              )                                                     : 
+  hasEnded                ?   ('The input device no longer provides audio')  :
+                              null;
 
   return (
     <StyledVolumeMeter width={width} height={height}>
@@ -224,34 +273,15 @@ export const VolumeMeter = ({
         activateButton(() =>
           audioContext.resume().then(() => setContextState(audioContext.state))
         )}
-      <Bars
+      <MeterDisplay
         show={contextState === "running"}
         className="volume-meter"
         ref={canvas}
         width={width}
         height={height}
       />
-      {contextState === "running" && (
-        <>
-          {!stream.isPresent() && (
-            <Alert height={height}>No Audio Input detected</Alert>
-          )}
-          {track.isPresent() && unableToProvideData && (
-            <Alert height={height}>Audio Input halted</Alert>
-          )}
-          {track.isPresent() && !unableToProvideData && !trackEnabled && (
-            <Alert height={height}>
-              Audio is muted.{" "}
-              <Clickable
-                onClick={() => {
-                  enableTrack(true);
-                }}
-              >
-                Click to unmute
-              </Clickable>
-            </Alert>
-          )}
-        </>
+      {contextState === "running" && error && (
+        <Alert height={height}>{error}</Alert>
       )}
     </StyledVolumeMeter>
   );
