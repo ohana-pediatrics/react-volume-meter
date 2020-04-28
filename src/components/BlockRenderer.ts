@@ -1,10 +1,13 @@
 import { VmShape } from "..";
 import { MeterDrawerOptions, MeterRenderer } from "./MeterRenderer";
 
+const TOO_LOUD = 0.8;
+const DECAY_RATE = 0.9;
 export class BlockRenderer extends MeterRenderer {
-  readonly blocks: number;
+  readonly bucketCount: number;
+  readonly bucketSize: number;
   readonly barWidth: number;
-  readonly blockMaxima: number[];
+  readonly bucketCeilings: number[];
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -17,31 +20,42 @@ export class BlockRenderer extends MeterRenderer {
   ) {
     super(ctx, { height, width, shape });
 
-    this.blocks = blocks;
+    this.bucketCount = blocks;
+    this.bucketSize = 1 / blocks;
+
     this.barWidth = width / (blocks + 1);
 
-    this.blockMaxima = Array(blocks)
+    this.bucketCeilings = Array(blocks)
       .fill(0)
-      .map((_, i) => (i + 1) / blocks);
+      .map((_, i) => (i + 1) * this.bucketSize);
 
     this.init();
   }
 
   draw(volume: number) {
     super.draw(volume);
-    const { prevVolume, canvasCtx, barWidth, height, shape, blocks } = this;
-    const vol = Math.max(volume, prevVolume * 0.9);
+    const {
+      prevVolume,
+      canvasCtx,
+      barWidth,
+      height,
+      shape,
+      bucketSize,
+      bucketCount,
+    } = this;
+    const vol = Math.max(volume, prevVolume * DECAY_RATE);
     this.prevVolume = vol;
     this.clear();
-    const volPerBlock = 1 / blocks;
 
-    this.blockMaxima.forEach((blockMax, i) => {
+    this.bucketCeilings.forEach((bucketCeiling, i) => {
       let color = "grey";
 
-      if (vol > 0.8 && blockMax >= 1) {
-        color = "red";
-      } else if (vol > blockMax) {
-        color = "green";
+      if (vol > bucketCeiling) {
+        if (bucketCeiling > TOO_LOUD) {
+          color = "red";
+        } else {
+          color = "green";
+        }
       }
 
       canvasCtx.fillStyle = color;
@@ -50,11 +64,11 @@ export class BlockRenderer extends MeterRenderer {
         canvasCtx.fillStyle = "orange";
       }
 
-      const x = ((barWidth * (blocks + 1)) / blocks) * i;
+      const x = barWidth * (bucketCount + 1) * bucketSize * i;
       const y =
         height -
         (shape === VmShape.VM_STEPPED
-          ? height * (i + 1) * (1 / (blocks + 1))
+          ? height * (i + 1) * (1 / (bucketCount + 1))
           : height);
 
       canvasCtx.fillRect(x, y, barWidth, height - y);
@@ -63,13 +77,13 @@ export class BlockRenderer extends MeterRenderer {
        * Handle partial filling of the last block to fill
        */
       if (!this.watchdogExpired) {
-        if (vol < 1 && blockMax < vol) {
-          canvasCtx.fillStyle = "green";
+        if (bucketCeiling > vol && vol > bucketCeiling - this.bucketSize) {
+          canvasCtx.fillStyle = vol > TOO_LOUD ? "red" : "green";
           canvasCtx.fillRect(
             x,
             y,
             // ((v % B) / B) is a sawtooth with period B and amplitude 1
-            ((vol % volPerBlock) / volPerBlock) * barWidth,
+            ((vol % this.bucketSize) / this.bucketSize) * barWidth,
             height - y
           );
         }
