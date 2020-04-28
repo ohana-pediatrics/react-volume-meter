@@ -112,7 +112,7 @@ const monitorTrack = (
     enumerable: originalStop.enumerable,
     value: function () {
       onStopCalled();
-      return originalStop.value();
+      return originalStop.value.call(track);
     },
   });
 
