@@ -368,3 +368,64 @@ withStoppableStream.story = {
     }),
   ],
 };
+
+export const disabledMeter = ({
+  store,
+}: {
+  store: Store<State & { enabled: boolean }>;
+}) => {
+  store.state.audioContext.addEventListener("statechange", () => {
+    store.set({
+      contextState: store.state.audioContext.state,
+    });
+  });
+  if (!store.state.stream.isPresent()) {
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        store.set({
+          stream: Optional.of(stream),
+        });
+      })
+      .catch((e) => {
+        console.error("Error getting UserMedia");
+        console.error(e);
+      });
+  }
+  return (
+    <div>
+      <VolumeMeter
+        enabled={store.state.enabled}
+        blocks={20}
+        stream={store.state.stream}
+        height={50}
+        shape={VmShape.VM_FLAT}
+        width={300}
+        audioContext={store.state.audioContext}
+      />
+
+      <div>Audio Context State: {store.state.contextState}</div>
+      <div>
+        <button
+          onClick={() => {
+            store.set({
+              enabled: !store.state.enabled,
+            });
+          }}
+        >
+          {store.state.enabled ? "Disabled" : "Enable"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+disabledMeter.story = {
+  decorators: [
+    StateDecorator({
+      ...getAudioContext(),
+      stream: Optional.empty(),
+      enabled: false,
+    }),
+  ],
+};

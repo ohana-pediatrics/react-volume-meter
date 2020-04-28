@@ -48,6 +48,7 @@ export const VolumeMeter = ({
 }: Props) => {
   const canvas: RefObject<HTMLCanvasElement> = useRef(null);
   const [animator, setAnimator] = useState(Optional.empty<Animator>());
+  const [animatorRunning, setAnimatorRunning] = useState(false);
   const [contextState, setContextState] = useState(audioContext.state);
   const [trackEnabled, setTrackEnabled] = useState(true);
   const [unableToProvideData, setUnableToProvideData] = useState(false);
@@ -64,6 +65,18 @@ export const VolumeMeter = ({
       tr.enabled = e;
     }
   };
+  const unmuteButton = () => (
+    <>
+      Audio is muted.{" "}
+      <Clickable
+        onClick={() => {
+          enableTrack(true);
+        }}
+      >
+        Click to unmute
+      </Clickable>
+    </>
+  );
 
   useEffect(() => {
     audioContext.addEventListener("statechange", onStateChange);
@@ -71,6 +84,16 @@ export const VolumeMeter = ({
       audioContext.removeEventListener("statechange", onStateChange);
     };
   }, [audioContext]);
+
+  useEffect(() => {
+    animator.ifPresent((a) => {
+      if (enabled) {
+        a.start();
+      } else {
+        a.stop();
+      }
+    });
+  }, [enabled, animator]);
 
   const onUnableToProvideData = useCallback(() => {
     setUnableToProvideData(true);
@@ -116,40 +139,35 @@ export const VolumeMeter = ({
   }, [audioContext]);
 
   useEffect(() => {
-    {
-      const canvasCtx = getCanvasContext(canvas.current);
+    const canvasCtx = getCanvasContext(canvas.current);
 
-      const renderer =
-        shape === VmShape.VM_CIRCLE
-          ? new CircleRenderer(canvasCtx, {
-              width,
-              height,
-              shape,
-            })
-          : new BlockRenderer(canvasCtx, {
-              width,
-              height,
-              shape,
-              blocks,
-            });
+    const renderer =
+      shape === VmShape.VM_CIRCLE
+        ? new CircleRenderer(canvasCtx, {
+            width,
+            height,
+            shape,
+          })
+        : new BlockRenderer(canvasCtx, {
+            width,
+            height,
+            shape,
+            blocks,
+          });
 
-      setAnimator(
-        Optional.of(
-          new Animator(
-            setupAnalyzer({ audioContext, stream }),
-            enabled,
-            renderer
-          )
-        )
-      );
-    }
+    const ani = new Animator(setupAnalyzer({ audioContext, stream }), renderer);
+    ani.addListener("start", () => setAnimatorRunning(true));
+    ani.addListener("stop", () => setAnimatorRunning(false));
+    setAnimator(Optional.of(ani));
   }, [canvas, audioContext, stream, contextState]);
 
   useEffect(() => {
     animator.ifPresent((a) => {
       a.stop();
       a.updateAnalyzer(setupAnalyzer({ audioContext, stream }));
-      a.enable(enabled);
+      if (enabled) {
+        a.start();
+      }
     });
     return () => {
       animator.ifPresent((a) => {
@@ -159,30 +177,25 @@ export const VolumeMeter = ({
   }, [stream, animator, audioContext, enabled, contextState]);
 
   useEffect(() => {
-    animator.ifPresent((a) => a.enable(enabled));
-  }, [enabled]);
+    animator.ifPresent((a) => {
+      if (enabled) {
+        a.start();
+      }
+    });
+  }, [enabled, animator]);
 
   const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
   const trackCount = stream.map((s) => s.getAudioTracks().length).orElse(0);
 
   // prettier-ignore
   const error = 
-  !track.isPresent()      ?   ("No Audio Input detected")                           : 
-  trackCount !== 1        ?   (`There are ${trackCount} tracks`)             :
-  unableToProvideData     ?   ("Audio Input halted")                                : 
-  !trackEnabled           ?   ( <>
-                                  Audio is muted.{" "}
-                                  <Clickable
-                                    onClick={() => {
-                                      enableTrack(true);
-                                    }}
-                                  >
-                                    Click to unmute
-                                  </Clickable>
-                                </>
-                              )                                                     : 
-  hasEnded                ?   ('The input device no longer provides audio')  :
-                              null;
+    !animatorRunning        ?   ("Disabled")                                   : 
+    !track.isPresent()      ?   ("No Audio Input detected")                    : 
+    trackCount !== 1        ?   (`There are ${trackCount} tracks`)             :
+    unableToProvideData     ?   ("Audio Input halted")                         : 
+    !trackEnabled           ?   ( unmuteButton())                              : 
+    hasEnded                ?   ('The input device no longer provides audio')  :
+                                null;
 
   return (
     <StyledVolumeMeter width={width} height={height}>
