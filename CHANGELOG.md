@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.7.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.6.1...v5.7.0) (2020-04-28)
+
+
+### Features
+
+* 🎸 detect when animator is not running and display message ([a3008b2](https://github.com/ahana-pediatrics/react-volume-meter/commit/a3008b202fa715945903d9d109f28741b2bec027))
+
 ### [5.6.1](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.6.0...v5.6.1) (2020-04-28)
 
 
