@@ -10,7 +10,7 @@ import React, {
 import { Animator } from "./Animator";
 import { BlockRenderer } from "./BlockRenderer";
 import { CircleRenderer } from "./CircleRenderer";
-import { getCanvasContext, monitorTrack, setupAnalyzer } from "./functions";
+import { getCanvasContext, monitorTrack } from "./functions";
 import { Alert, Clickable, MeterDisplay, StyledVolumeMeter } from "./layout";
 
 export enum VmShape {
@@ -155,7 +155,7 @@ export const VolumeMeter = ({
             blocks,
           });
 
-    const ani = new Animator(setupAnalyzer({ audioContext, stream }), renderer);
+    const ani = new Animator(audioContext, renderer);
     ani.addListener("start", () => setAnimatorRunning(true));
     ani.addListener("stop", () => setAnimatorRunning(false));
     setAnimator(Optional.of(ani));
@@ -164,7 +164,7 @@ export const VolumeMeter = ({
   useEffect(() => {
     animator.ifPresent((a) => {
       a.stop();
-      a.updateAnalyzer(setupAnalyzer({ audioContext, stream }));
+      a.changeStream(stream);
       if (enabled) {
         a.start();
       }
@@ -174,15 +174,7 @@ export const VolumeMeter = ({
         a.stop();
       });
     };
-  }, [stream, animator, audioContext, enabled, contextState]);
-
-  useEffect(() => {
-    animator.ifPresent((a) => {
-      if (enabled) {
-        a.start();
-      }
-    });
-  }, [enabled, animator]);
+  }, [stream, animator, enabled]);
 
   const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
   const trackCount = stream.map((s) => s.getAudioTracks().length).orElse(0);

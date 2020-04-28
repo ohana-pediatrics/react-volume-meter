@@ -1,5 +1,6 @@
 import { Optional } from "@ahanapediatrics/ahana-fp";
 import { EventEmitter } from "events";
+import { setupAnalyzer } from "./functions";
 import { MeterRenderer } from "./MeterRenderer";
 
 const getVolume = (analyser: AnalyserNode) => {
@@ -10,36 +11,53 @@ const getVolume = (analyser: AnalyserNode) => {
 };
 
 export class Animator extends EventEmitter {
+  private ctx: AudioContext;
   private rafId: number = 0;
   private isStopping: boolean = false;
   private renderer: MeterRenderer;
-  private analyser: Optional<AnalyserNode>;
+  private stream: MediaStream;
+  private analyser?: AnalyserNode;
 
-  constructor(analyser: Optional<AnalyserNode>, renderer: MeterRenderer) {
+  constructor(ctx: AudioContext, renderer: MeterRenderer) {
     super();
-    this.analyser = analyser;
+    this.ctx = ctx;
     this.renderer = renderer;
   }
 
-  updateAnalyzer(analyser: Optional<AnalyserNode>) {
+  changeStream(s: Optional<MediaStream>) {
+    const { isStopping } = this;
     this.stop();
-    this.analyser = analyser;
+
+    s.ifPresent((stream) => {
+      if (stream.id === this.stream?.id) {
+        if (!isStopping) {
+          this.start();
+        }
+      } else {
+        this.stream = stream;
+        console.log(this.stream?.id);
+        const a = setupAnalyzer({ audioContext: this.ctx, stream });
+        a.minDecibels = -100;
+        a.maxDecibels = -30;
+        a.fftSize = 64;
+        this.analyser = a;
+      }
+    });
   }
 
   start() {
     this.renderer.start();
+    this.isStopping = false;
     this.emit("start");
 
     const drawLoop = () => {
-      this.analyser.ifPresent((analyser) => {
-        if (this.isStopping) {
-          this.isStopping = false;
-          return;
-        }
-        const volume = getVolume(analyser);
-        this.renderer.draw(volume);
-        this.rafId = window.requestAnimationFrame(drawLoop);
-      });
+      if (this.isStopping || !this.analyser) {
+        this.isStopping = false;
+        return;
+      }
+      const volume = getVolume(this.analyser);
+      this.renderer.draw(volume);
+      this.rafId = window.requestAnimationFrame(drawLoop);
     };
 
     drawLoop();

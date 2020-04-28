@@ -1,5 +1,3 @@
-import { Optional } from "@ahanapediatrics/ahana-fp";
-
 export type MonitorOptions = {
   onEnabledChanged: (e: boolean) => unknown;
   onStopCalled: () => unknown;
@@ -77,15 +75,11 @@ export const setupAnalyzer = ({
   stream,
 }: {
   audioContext: AudioContext;
-  stream: Optional<MediaStream>;
+  stream: MediaStream;
 }) => {
-  return stream.map((s) => {
-    if (typeof audioContext === "undefined") {
-      return undefined;
-    }
-    const node = audioContext.createMediaStreamSource(s);
-    const analyser = audioContext.createAnalyser();
-    node.connect(analyser);
-    return analyser;
-  });
+  console.log("setupAnalyzer");
+  const node = audioContext.createMediaStreamSource(stream);
+  const analyser = audioContext.createAnalyser();
+  node.connect(analyser);
+  return analyser;
 };
