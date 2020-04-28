@@ -64,6 +64,7 @@ export class Animator {
 
   stop() {
     this.renderer.stop();
+    this.enabled = false;
     window.cancelAnimationFrame(this.rafId);
   }
 }
