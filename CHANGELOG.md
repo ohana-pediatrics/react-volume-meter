@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.4.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.3.0...v5.4.0) (2020-04-28)
+
+
+### Features
+
+* 🎸 detect when a track has ended ([b9ba7e9](https://github.com/ahana-pediatrics/react-volume-meter/commit/b9ba7e98aff0eb29a9f9eae6f2b133466590c65b))
+
 ## [5.3.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.2.0...v5.3.0) (2020-04-27)
 
 
