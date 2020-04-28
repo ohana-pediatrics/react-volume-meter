@@ -6,12 +6,17 @@ export interface MeterDrawerOptions {
   shape: VmShape;
 }
 
-export class MeterRenderer {
+const WATCHDOG_PERIOD = 1000;
+
+export abstract class MeterRenderer {
   canvasCtx: CanvasRenderingContext2D;
   width: number;
   height: number;
   prevVolume: number;
   readonly shape: VmShape;
+  private watchdog: number;
+  protected watchdogExpired: boolean;
+  private watchdogTimer: number;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -27,12 +32,31 @@ export class MeterRenderer {
     this.stop();
   }
 
+  private checkWatchdog() {
+    const now = +new Date();
+    if (now - this.watchdog > WATCHDOG_PERIOD) {
+      this.watchdogExpired = true;
+      this.draw(0);
+    }
+    this.watchdog = now;
+    this.watchdogTimer = window.setTimeout(() => {
+      this.checkWatchdog();
+    }, WATCHDOG_PERIOD / 2);
+  }
+
   start() {
     this.prevVolume = 0;
+    this.watchdog = +new Date();
+    this.watchdogExpired = false;
+    this.watchdogTimer = window.setTimeout(() => {
+      this.checkWatchdog();
+    }, WATCHDOG_PERIOD / 2);
   }
 
   stop() {
     this.prevVolume = 0;
+    window.clearTimeout(this.watchdogTimer);
+    this.watchdogExpired = false;
     this.draw(0);
   }
 
@@ -42,6 +66,6 @@ export class MeterRenderer {
   }
 
   draw(volume: number) {
-    throw new Error("Not Implemented");
+    this.watchdog = +new Date();
   }
 }

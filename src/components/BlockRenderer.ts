@@ -28,6 +28,7 @@ export class BlockRenderer extends MeterRenderer {
   }
 
   draw(volume: number) {
+    super.draw(volume);
     const { prevVolume, canvasCtx, barWidth, height, shape, blocks } = this;
     const vol = Math.max(volume, prevVolume * 0.9);
     this.prevVolume = vol;
@@ -45,6 +46,10 @@ export class BlockRenderer extends MeterRenderer {
 
       canvasCtx.fillStyle = color;
 
+      if (this.watchdogExpired) {
+        canvasCtx.fillStyle = "orange";
+      }
+
       const x = ((barWidth * (blocks + 1)) / blocks) * i;
       const y =
         height -
@@ -54,15 +59,20 @@ export class BlockRenderer extends MeterRenderer {
 
       canvasCtx.fillRect(x, y, barWidth, height - y);
 
-      if (vol < 1 && blockMax < vol) {
-        canvasCtx.fillStyle = "green";
-        canvasCtx.fillRect(
-          x,
-          y,
-          // ((v % B) / B) is a sawtooth with period B and amplitude 1
-          ((vol % volPerBlock) / volPerBlock) * barWidth,
-          height - y
-        );
+      /**
+       * Handle partial filling of the last block to fill
+       */
+      if (!this.watchdogExpired) {
+        if (vol < 1 && blockMax < vol) {
+          canvasCtx.fillStyle = "green";
+          canvasCtx.fillRect(
+            x,
+            y,
+            // ((v % B) / B) is a sawtooth with period B and amplitude 1
+            ((vol % volPerBlock) / volPerBlock) * barWidth,
+            height - y
+          );
+        }
       }
     });
   }

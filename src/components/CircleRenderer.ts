@@ -7,6 +7,7 @@ export class CircleRenderer extends MeterRenderer {
   }
 
   draw(volume: number) {
+    super.draw(volume);
     const { prevVolume, canvasCtx, height, width } = this;
     const vol = Math.max(volume, prevVolume * 0.9);
     this.prevVolume = vol;
@@ -23,15 +24,21 @@ export class CircleRenderer extends MeterRenderer {
     canvasCtx.fillStyle = "transparent";
     canvasCtx.strokeStyle = "transparent";
 
+    if (this.watchdogExpired) {
+      canvasCtx.fillStyle = "orange";
+    }
+
     canvasCtx.beginPath();
     canvasCtx.arc(width / 2, height / 2, radius - 10, 0, 2 * Math.PI);
     canvasCtx.stroke();
     canvasCtx.fill();
 
-    canvasCtx.fillStyle = color;
-    canvasCtx.beginPath();
-    canvasCtx.arc(width / 2, height / 2, (radius - 10) * vol, 0, 2 * Math.PI);
-    canvasCtx.stroke();
-    canvasCtx.fill();
+    if (!this.watchdogExpired) {
+      canvasCtx.fillStyle = color;
+      canvasCtx.beginPath();
+      canvasCtx.arc(width / 2, height / 2, (radius - 10) * vol, 0, 2 * Math.PI);
+      canvasCtx.stroke();
+      canvasCtx.fill();
+    }
   }
 }
