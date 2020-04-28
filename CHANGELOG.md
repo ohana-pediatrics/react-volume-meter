@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.6.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.5.0...v5.6.0) (2020-04-28)
+
+
+### Features
+
+* 🎸 add watchdog timer ([538dd4f](https://github.com/ahana-pediatrics/react-volume-meter/commit/538dd4f6fb80c97610cee08d2ba72f787c9fd50d))
+
+
+### Bug Fixes
+
+* 🐛 make sure `track.stop()` works ([479944c](https://github.com/ahana-pediatrics/react-volume-meter/commit/479944c3845493151da1763c7b9006f3c603cf11))
+
 ## [5.5.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.4.0...v5.5.0) (2020-04-28)
 
 

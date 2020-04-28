@@ -1,6 +1,6 @@
 {
   "name": "@ahanapediatrics/react-volume-meter",
-  "version": "5.5.0",
+  "version": "5.6.0",
   "description": "A volume meter React component",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
