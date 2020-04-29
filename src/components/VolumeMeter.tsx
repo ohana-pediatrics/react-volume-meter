@@ -1,5 +1,6 @@
 import { Optional } from "@ahanapediatrics/ahana-fp";
 import React, {
+  MutableRefObject,
   ReactNode,
   RefObject,
   useCallback,
@@ -47,12 +48,12 @@ export const VolumeMeter = ({
   activateButton = defaultActivateButton,
 }: Props) => {
   const canvas: RefObject<HTMLCanvasElement> = useRef(null);
-  const [animator, setAnimator] = useState(Optional.empty<Animator>());
-  const [animatorRunning, setAnimatorRunning] = useState(false);
   const [contextState, setContextState] = useState(audioContext.state);
   const [trackEnabled, setTrackEnabled] = useState(true);
   const [unableToProvideData, setUnableToProvideData] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
+
+  const anima: MutableRefObject<Animator | null> = useRef(null);
 
   const onStateChange = useCallback(() => {
     setContextState(audioContext.state);
@@ -84,16 +85,6 @@ export const VolumeMeter = ({
       audioContext.removeEventListener("statechange", onStateChange);
     };
   }, [audioContext]);
-
-  useEffect(() => {
-    animator.ifPresent((a) => {
-      if (enabled) {
-        a.start();
-      } else {
-        a.stop();
-      }
-    });
-  }, [enabled, animator]);
 
   const onUnableToProvideData = useCallback(() => {
     setUnableToProvideData(true);
@@ -138,9 +129,8 @@ export const VolumeMeter = ({
     setContextState(audioContext.state);
   }, [audioContext]);
 
-  useEffect(() => {
+  if (canvas.current) {
     const canvasCtx = getCanvasContext(canvas.current);
-
     const renderer =
       shape === VmShape.VM_CIRCLE
         ? new CircleRenderer(canvasCtx, {
@@ -155,33 +145,28 @@ export const VolumeMeter = ({
             blocks,
           });
 
-    const ani = new Animator(audioContext, renderer);
-    ani.addListener("start", () => setAnimatorRunning(true));
-    ani.addListener("stop", () => setAnimatorRunning(false));
-    setAnimator(Optional.of(ani));
-  }, [canvas, audioContext, stream, contextState]);
+    if (anima.current) {
+      anima.current.stop();
+    }
 
-  useEffect(() => {
-    animator.ifPresent((a) => {
-      a.stop();
-      a.changeStream(stream);
-      if (enabled) {
-        a.start();
-      }
-    });
-    return () => {
-      animator.ifPresent((a) => {
-        a.stop();
-      });
-    };
-  }, [stream, animator, enabled]);
+    const ani = new Animator(audioContext, renderer);
+
+    ani.changeStream(stream);
+
+    if (enabled) {
+      ani.start();
+    } else {
+      ani.stop();
+    }
+    anima.current = ani;
+  }
 
   const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
   const trackCount = stream.map((s) => s.getAudioTracks().length).orElse(0);
 
   // prettier-ignore
   const error = 
-    !animatorRunning        ?   ("Disabled")                                   : 
+    !enabled                ?   ("Disabled")                                   : 
     !track.isPresent()      ?   ("No Audio Input detected")                    : 
     trackCount !== 1        ?   (`There are ${trackCount} tracks`)             :
     unableToProvideData     ?   ("Audio Input halted")                         : 
