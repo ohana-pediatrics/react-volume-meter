@@ -35,7 +35,6 @@ export class Animator extends EventEmitter {
         }
       } else {
         this.stream = stream;
-        console.log(this.stream?.id);
         const a = setupAnalyzer({ audioContext: this.ctx, stream });
         a.minDecibels = -100;
         a.maxDecibels = -30;
