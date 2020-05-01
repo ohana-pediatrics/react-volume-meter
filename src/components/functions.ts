@@ -77,7 +77,6 @@ export const setupAnalyzer = ({
   audioContext: AudioContext;
   stream: MediaStream;
 }) => {
-  console.log("setupAnalyzer");
   const node = audioContext.createMediaStreamSource(stream);
   const analyser = audioContext.createAnalyser();
   node.connect(analyser);
