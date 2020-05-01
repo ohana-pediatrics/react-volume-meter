@@ -17,6 +17,45 @@ const getAudioContext = () => {
   return { audioContext, contextState };
 };
 
+/**
+ * This is for instrumenting calls to the native `getUserMedia` method
+ * to track down rogue calls in iOS
+ *
+ * @param owner An object that has a getUserMedia method
+ */
+const instrumentGUM = (owner: {
+  getUserMedia: (...args: unknown[]) => void | Promise<MediaStream>;
+}) => {
+  const originalGUM = Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(owner),
+    "getUserMedia"
+  );
+  if (originalGUM) {
+    console.log("Instrumenting GUM");
+    Object.defineProperty(owner, "getUserMedia", {
+      configurable: originalGUM.configurable,
+      enumerable: originalGUM.enumerable,
+      value: function (
+        constraints: MediaStreamConstraints,
+        ...args: unknown[]
+      ) {
+        console.log("Calling Native getUserMedia");
+        console.log(`Constraints: ${JSON.stringify(constraints)}`);
+        return originalGUM.value.call(
+          navigator.mediaDevices,
+          constraints,
+          ...args
+        );
+      },
+    });
+  } else {
+    console.log("Could not get GUM");
+  }
+};
+
+instrumentGUM(navigator.mediaDevices);
+instrumentGUM(navigator);
+
 type State = {
   audioContext: AudioContext;
   contextState: string;
@@ -25,6 +64,7 @@ type State = {
 
 export const base = ({ store }: { store: Store<State> }) => {
   store.state.audioContext.addEventListener("statechange", () => {
+    console.log(`AudioContext state is now ${store.state.audioContext.state}`);
     store.set({
       contextState: store.state.audioContext.state,
     });
@@ -84,6 +124,7 @@ export const withInputSelection = ({
   store: Store<OptionsState>;
 }) => {
   store.state.audioContext.addEventListener("statechange", () => {
+    console.log(`AudioContext state is now ${store.state.audioContext.state}`);
     store.set({
       contextState: store.state.audioContext.state,
     });
@@ -122,6 +163,7 @@ export const withInputSelection = ({
       <button
         type="button"
         onClick={() => {
+          console.log("Creating new AudioContext");
           store.set({ audioContext: new AudioContext() });
         }}
       >
@@ -170,6 +212,7 @@ withInputSelection.story = {
 
 export const withActivateButton = ({ store }: { store: Store<State> }) => {
   store.state.audioContext.addEventListener("statechange", () => {
+    console.log(`AudioContext state is now ${store.state.audioContext.state}`);
     store.set({
       contextState: store.state.audioContext.state,
     });
@@ -219,6 +262,7 @@ withActivateButton.story = {
 
 export const withNoInputStream = ({ store }: { store: Store<State> }) => {
   store.state.audioContext.addEventListener("statechange", () => {
+    console.log(`AudioContext state is now ${store.state.audioContext.state}`);
     store.set({
       contextState: store.state.audioContext.state,
     });
@@ -254,6 +298,7 @@ export const withDisabledStream = ({
   store: Store<State & { enabled: boolean }>;
 }) => {
   store.state.audioContext.addEventListener("statechange", () => {
+    console.log(`AudioContext state is now ${store.state.audioContext.state}`);
     store.set({
       contextState: store.state.audioContext.state,
     });
@@ -315,6 +360,7 @@ withDisabledStream.story = {
 
 export const withStoppableStream = ({ store }: { store: Store<State> }) => {
   store.state.audioContext.addEventListener("statechange", () => {
+    console.log(`AudioContext state is now ${store.state.audioContext.state}`);
     store.set({
       contextState: store.state.audioContext.state,
     });
@@ -375,6 +421,7 @@ export const disabledMeter = ({
   store: Store<State & { enabled: boolean }>;
 }) => {
   store.state.audioContext.addEventListener("statechange", () => {
+    console.log(`AudioContext state is now ${store.state.audioContext.state}`);
     store.set({
       contextState: store.state.audioContext.state,
     });
