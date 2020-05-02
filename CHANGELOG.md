@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.8.0](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.7.0...v5.8.0) (2020-05-02)
+
+
+### Features
+
+* 🎸 add console logging to Storybook ([25d5dd7](https://github.com/ahana-pediatrics/react-volume-meter/commit/25d5dd72c70341d8c164405afdd7192ff99fad4e))
+
+
+### Bug Fixes
+
+* 🐛 improve behaviour at over-loud volumes ([a11f390](https://github.com/ahana-pediatrics/react-volume-meter/commit/a11f390353403dde6c4f50779f98ad77e4df50fb))
+* Patrick Bakke's awesome fix!! ([14576ff](https://github.com/ahana-pediatrics/react-volume-meter/commit/14576fff683840ddec1b8ef1d204999fed313131))
+
 ### [5.7.3](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.7.2...v5.7.3) (2020-05-01)
 
 ### [5.7.2](https://github.com/ahana-pediatrics/react-volume-meter/compare/v5.7.1...v5.7.2) (2020-05-01)
