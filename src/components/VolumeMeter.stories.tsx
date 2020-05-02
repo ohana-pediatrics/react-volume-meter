@@ -164,7 +164,8 @@ export const withInputSelection = ({
         type="button"
         onClick={() => {
           console.log("Creating new AudioContext");
-          store.set({ audioContext: new AudioContext() });
+          const { audioContext } = getAudioContext();
+          store.set({ audioContext });
         }}
       >
         New Context
