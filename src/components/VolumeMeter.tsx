@@ -165,7 +165,7 @@ export const VolumeMeter = ({
         animatorRef.current.stop();
       }
     }
-  }, [animatorRef.current, enabled, animatorRef]);
+  }, [animatorRef.current, enabled, stream]);
 
   const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
   const trackCount = stream.map((s) => s.getAudioTracks().length).orElse(0);
