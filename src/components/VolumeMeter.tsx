@@ -53,7 +53,10 @@ export const VolumeMeter = ({
   const [unableToProvideData, setUnableToProvideData] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
 
-  const anima: MutableRefObject<Animator | null> = useRef(null);
+  const rendererRef: MutableRefObject<
+    CircleRenderer | BlockRenderer | null
+  > = useRef(null);
+  const animatorRef: MutableRefObject<Animator | null> = useRef(null);
 
   const onStateChange = useCallback(() => {
     setContextState(audioContext.state);
@@ -129,37 +132,40 @@ export const VolumeMeter = ({
     setContextState(audioContext.state);
   }, [audioContext]);
 
-  if (canvas.current) {
-    const canvasCtx = getCanvasContext(canvas.current);
-    const renderer =
-      shape === VmShape.VM_CIRCLE
-        ? new CircleRenderer(canvasCtx, {
-            width,
-            height,
-            shape,
-          })
-        : new BlockRenderer(canvasCtx, {
-            width,
-            height,
-            shape,
-            blocks,
-          });
-
-    if (anima.current) {
-      anima.current.stop();
+  useEffect(() => {
+    if (canvas.current) {
+      const canvasCtx = getCanvasContext(canvas.current);
+      rendererRef.current =
+        shape === VmShape.VM_CIRCLE
+          ? new CircleRenderer(canvasCtx, {
+              width,
+              height,
+              shape,
+            })
+          : new BlockRenderer(canvasCtx, {
+              width,
+              height,
+              shape,
+              blocks,
+            });
     }
-
-    const ani = new Animator(audioContext, renderer);
-
-    ani.changeStream(stream);
-
-    if (enabled) {
-      ani.start();
-    } else {
-      ani.stop();
+  }, []);
+  useEffect(() => {
+    if (rendererRef.current) {
+      animatorRef.current = new Animator(audioContext, rendererRef.current);
     }
-    anima.current = ani;
-  }
+    // intentionally not using enabled in the dependencies here - only want this updating once
+  }, [rendererRef.current]);
+  useEffect(() => {
+    if (animatorRef.current) {
+      animatorRef.current.changeStream(stream);
+      if (enabled) {
+        animatorRef.current.start();
+      } else {
+        animatorRef.current.stop();
+      }
+    }
+  }, [animatorRef.current, enabled, animatorRef]);
 
   const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
   const trackCount = stream.map((s) => s.getAudioTracks().length).orElse(0);

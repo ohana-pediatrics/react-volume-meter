@@ -8,3 +8,6 @@
 /coverage
 *.code-workspace
 /storybook-static
+
+*.cert
+*.key
