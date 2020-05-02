@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useMemo
 } from "react";
 import { Animator } from "./Animator";
 import { BlockRenderer } from "./BlockRenderer";
@@ -17,7 +18,7 @@ import { Alert, Clickable, MeterDisplay, StyledVolumeMeter } from "./layout";
 export enum VmShape {
   VM_CIRCLE,
   VM_STEPPED,
-  VM_FLAT,
+  VM_FLAT
 }
 
 type Props = {
@@ -45,8 +46,9 @@ export const VolumeMeter = ({
   blocks = 5,
   audioContext,
   stream,
-  activateButton = defaultActivateButton,
+  activateButton = defaultActivateButton
 }: Props) => {
+  console.log("VolumeMeter rendering...");
   const canvas: RefObject<HTMLCanvasElement> = useRef(null);
   const [contextState, setContextState] = useState(audioContext.state);
   const [trackEnabled, setTrackEnabled] = useState(true);
@@ -106,7 +108,7 @@ export const VolumeMeter = ({
           onEnabledChanged: setTrackEnabled,
           onStopCalled: () => {
             setHasEnded(true);
-          },
+          }
         });
 
         setUnableToProvideData(tr.muted);
@@ -129,27 +131,33 @@ export const VolumeMeter = ({
     setContextState(audioContext.state);
   }, [audioContext]);
 
-  if (canvas.current) {
+  const ani: Animator | null = useMemo(() => {
+    if (!canvas.current) {
+      return null;
+    }
     const canvasCtx = getCanvasContext(canvas.current);
     const renderer =
       shape === VmShape.VM_CIRCLE
         ? new CircleRenderer(canvasCtx, {
             width,
             height,
-            shape,
+            shape
           })
         : new BlockRenderer(canvasCtx, {
             width,
             height,
             shape,
-            blocks,
+            blocks
           });
+    return new Animator(audioContext, renderer);
+  }, [audioContext, canvas.current]);
 
+  console.log(ani);
+
+  if (ani) {
     if (anima.current) {
       anima.current.stop();
     }
-
-    const ani = new Animator(audioContext, renderer);
 
     ani.changeStream(stream);
 
@@ -161,8 +169,8 @@ export const VolumeMeter = ({
     anima.current = ani;
   }
 
-  const track = stream.map((s) => s.getAudioTracks()).map((t) => t[0]);
-  const trackCount = stream.map((s) => s.getAudioTracks().length).orElse(0);
+  const track = stream.map(s => s.getAudioTracks()).map(t => t[0]);
+  const trackCount = stream.map(s => s.getAudioTracks().length).orElse(0);
 
   // prettier-ignore
   const error = 

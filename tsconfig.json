@@ -14,14 +14,9 @@
     "module": "commonjs",
     "target": "es2015",
     "noImplicitAny": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["react"]
   },
   "include": ["src/**/*"],
-  "exclude": [
-
-    "node_modules",
-    "styleguide",
-    "dist",
-    "coverage"
-  ]
+  "exclude": ["node_modules", "styleguide", "dist", "coverage"]
 }
