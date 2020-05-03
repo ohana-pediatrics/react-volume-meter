@@ -32,25 +32,28 @@ export abstract class MeterRenderer {
     this.stop();
   }
 
-  private checkWatchdog() {
-    const now = +new Date();
-    if (now - this.watchdog > WATCHDOG_PERIOD) {
-      this.watchdogExpired = true;
-      this.draw(0);
-    }
-    this.watchdog = now;
+  private startWatchdog() {
+    this.watchdog = +new Date();
     this.watchdogTimer = window.setTimeout(() => {
       this.checkWatchdog();
     }, WATCHDOG_PERIOD / 2);
   }
 
+  private checkWatchdog() {
+    const now = +new Date();
+    if (now - this.watchdog > WATCHDOG_PERIOD) {
+      this.watchdogExpired = true;
+      this.draw(0);
+    } else {
+      this.watchdogExpired = false;
+    }
+    this.startWatchdog();
+  }
+
   start() {
     this.prevVolume = 0;
-    this.watchdog = +new Date();
     this.watchdogExpired = false;
-    this.watchdogTimer = window.setTimeout(() => {
-      this.checkWatchdog();
-    }, WATCHDOG_PERIOD / 2);
+    this.startWatchdog();
   }
 
   stop() {
