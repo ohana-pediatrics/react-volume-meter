@@ -61,7 +61,7 @@
     "react-dom": "^16.13.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^0.2.4",
-    "standard-version": "^7.1.0",
+    "standard-version": "^8.0.0",
     "styled-components": "^5.1.0",
     "typescript": "^3.7.2",
     "webpack": "^4.16.5",
